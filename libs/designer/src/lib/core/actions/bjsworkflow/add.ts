@@ -98,7 +98,7 @@ const initializeOperationDetails = async (
   const isTrigger = isRootNodeInGraph(nodeId, 'root', state.workflow.nodesMetadata);
   const { type, kind, connectorId, operationId } = operationInfo;
   let isConnectionRequired = true;
-  let connector: Connector;
+  let connector: Connector | undefined;
   const operationManifestService = OperationManifestService();
   const staticResultService = StaticResultService();
 
@@ -112,10 +112,11 @@ const initializeOperationDetails = async (
   if (operationManifestService.isSupported(type, kind)) {
     manifest = await getOperationManifest(operationInfo);
     isConnectionRequired = isConnectionRequiredForOperation(manifest);
-    connector = manifest.properties.connector as Connector;
+    connector = manifest.properties.connector;
 
     const { iconUri: operationIcon, brandColor: operationBrandColor } = manifest.properties;
-    const { iconUri: connectorIcon, brandColor: connectorBrandColor } = connector.properties;
+    const connectorIcon = connector ? getIconUriFromConnector(connector) : '';
+    const connectorBrandColor = connector ? getBrandColorFromConnector(connector) : '';
     const iconUri = operationIcon ?? connectorIcon;
     const brandColor = operationBrandColor ?? connectorBrandColor;
     const { inputs: nodeInputs, dependencies: inputDependencies } = getInputParametersFromManifest(nodeId, manifest);
@@ -202,7 +203,7 @@ const initializeOperationDetails = async (
       dispatch,
       getState
     );
-  } else {
+  } else if (connector) {
     await trySetDefaultConnectionForNode(nodeId, connector, dispatch, isConnectionRequired);
   }
 
