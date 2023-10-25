@@ -1,3 +1,4 @@
+import isEqual from 'lodash.isequal';
 import type { Workflow } from '../../common/models/workflow';
 import { getConnectionsApiAndMapping } from '../actions/bjsworkflow/connections';
 import { updateWorkflowParameters } from '../actions/bjsworkflow/initialize';
@@ -24,8 +25,11 @@ export const initializeGraphState = createAsyncThunk<
   { state: RootState }
 >('parser/deserialize', async (graphState: { workflowDefinition: Workflow; runInstance: any }, thunkAPI): Promise<InitWorkflowPayload> => {
   const { workflowDefinition, runInstance } = graphState;
-  const { workflow } = thunkAPI.getState() as RootState;
-  const spec = workflow.workflowSpec;
+  const {
+    connections: existingConnections,
+    workflow: existingWorkflow,
+  } = thunkAPI.getState();
+  const spec = existingWorkflow.workflowSpec;
 
   if (spec === undefined) {
     throw new Error('Trying to import workflow without specifying the workflow type');
@@ -40,12 +44,20 @@ export const initializeGraphState = createAsyncThunk<
     getConnectionsQuery();
     const { definition, connectionReferences, parameters } = workflowDefinition;
     const deserializedWorkflow = BJSDeserialize(definition, runInstance);
-    // For situations where there is an existing workflow, respect the node dimensions so that they are not reset
-    const previousGraphFlattened = flattenWorkflowNodes(workflow.graph?.children || []);
-    updateChildrenDimensions(deserializedWorkflow?.graph?.children || [], previousGraphFlattened);
 
-    thunkAPI.dispatch(initializeConnectionReferences(connectionReferences ?? {}));
-    thunkAPI.dispatch(initializeStaticResultProperties(deserializedWorkflow.staticResults ?? {}));
+    const isDefinitionUpdated = !isEqual(existingWorkflow.originalDefinition, definition);
+    const isConnectionReferenceMapUpdated = !isEqual(existingConnections.connectionReferences, connectionReferences);
+
+    if (isDefinitionUpdated) {
+      // For situations where there is an existing workflow, respect the node dimensions so that they are not reset
+      const previousGraphFlattened = flattenWorkflowNodes(existingWorkflow.graph?.children || []);
+      updateChildrenDimensions(deserializedWorkflow?.graph?.children || [], previousGraphFlattened);
+      thunkAPI.dispatch(initializeStaticResultProperties(deserializedWorkflow.staticResults ?? {}));
+    }
+
+    if (isConnectionReferenceMapUpdated) {
+      thunkAPI.dispatch(initializeConnectionReferences(connectionReferences ?? {}));
+    }
     updateWorkflowParameters(parameters ?? {}, thunkAPI.dispatch);
 
     const asyncInitialize = async () => {

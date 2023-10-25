@@ -1,3 +1,4 @@
+import isEqual from 'lodash.isequal';
 import { getInputDependencies } from '../../actions/bjsworkflow/initialize';
 import type { Settings } from '../../actions/bjsworkflow/settings';
 import type { NodeStaticResults } from '../../actions/bjsworkflow/staticresults';
@@ -193,7 +194,13 @@ export const operationMetadataSlice = createSlice({
   reducers: {
     initializeOperationInfo: (state, action: PayloadAction<AddNodeOperationPayload>) => {
       const { id, connectorId, operationId, type, kind } = action.payload;
-      state.operationInfo[id] = { connectorId, operationId, type, kind };
+
+      const nodeOperation: NodeOperation = { connectorId, operationId, type, kind };
+      if (isEqual(state.operationInfo[id], nodeOperation)) {
+        return;
+      }
+
+      state.operationInfo[id] = nodeOperation;
     },
     initializeNodes: (state, action: PayloadAction<(NodeData | undefined)[]>) => {
       for (const nodeData of action.payload) {
@@ -386,11 +393,10 @@ export const operationMetadataSlice = createSlice({
       action: PayloadAction<{ nodeId: string; groupId: string; parameterId: string; validationErrors: string[] | undefined }>
     ) => {
       const { nodeId, groupId, parameterId, validationErrors } = action.payload;
-      const index = state.inputParameters[nodeId].parameterGroups[groupId].parameters.findIndex(
-        (parameter) => parameter.id === parameterId
-      );
-      if (index > -1) {
-        state.inputParameters[nodeId].parameterGroups[groupId].parameters[index].validationErrors = validationErrors;
+      const { parameters } = state.inputParameters[nodeId].parameterGroups[groupId];
+      const index = parameters.findIndex((parameter) => parameter.id === parameterId);
+      if (index > -1 && isEqual(parameters[index].validationErrors, validationErrors)) {
+        parameters[index].validationErrors = validationErrors;
       }
     },
     removeParameterValidationError: (
