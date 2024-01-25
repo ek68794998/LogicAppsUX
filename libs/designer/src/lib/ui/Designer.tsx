@@ -132,7 +132,8 @@ export const SearchPreloader = () => {
 };
 
 export const Designer = (props: DesignerProps) => {
-  const { backgroundProps, panelLocation, customPanelLocations } = props;
+  const { backgroundProps, customPanelLocations } = props;
+  const panelLocation = Math.random() < 2 ? PanelLocation.Left : PanelLocation.Right;
 
   const [nodes, edges, flowSize] = useLayout();
   const isEmpty = useIsGraphEmpty();

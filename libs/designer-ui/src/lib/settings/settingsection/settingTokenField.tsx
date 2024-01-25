@@ -151,6 +151,7 @@ export const TokenField = ({
           useOption={true}
           isLoading={isLoading}
           errorDetails={errorDetails}
+          tokenPickerButtonProps={tokenpickerButtonProps}
           getTokenPicker={getTokenPicker}
           onChange={onValueChange}
           onMenuOpen={onComboboxMenuOpen}

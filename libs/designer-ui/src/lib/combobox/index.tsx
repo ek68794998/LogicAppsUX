@@ -291,6 +291,7 @@ export const Combobox = ({
             basePlugins={{ clearEditor: true, autoFocus: canAutoFocus }}
             initialValue={value}
             onBlur={handleBlur}
+            tokenPickerButtonProps={baseEditorProps.tokenPickerButtonProps}
             getTokenPicker={baseEditorProps.getTokenPicker}
             placeholder={baseEditorProps.placeholder}
             dataAutomationId={baseEditorProps.dataAutomationId}
