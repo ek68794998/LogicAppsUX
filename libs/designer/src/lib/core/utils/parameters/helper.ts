@@ -1031,9 +1031,15 @@ export function generateExpressionFromKey(
   segments.shift();
   segments.shift();
   const result = [];
-  // NOTE: Use @body for tokens that come from the body path like outputs.$.Body.weather
+
   let rootMethod = method;
-  if (overrideMethod && !isInsideArray && segments[0]?.value?.toString()?.toLowerCase() === OutputSource.Body) {
+
+  // NOTE: Use @body for tokens that come from the body path like outputs.$.Body.weather
+  const leadSegmentValue = segments[0]?.value?.toString()?.toLowerCase();
+  const isOutputsBody =
+    leadSegmentValue && (leadSegmentValue === OutputSource.Body || leadSegmentValue.startsWith(`${OutputSource.Body}/`));
+
+  if (overrideMethod && !isInsideArray && isOutputsBody) {
     segments.shift();
     rootMethod = actionName ? `${OutputSource.Body}(${convertToStringLiteral(actionName)})` : constants.TRIGGER_BODY_OUTPUT;
   }
