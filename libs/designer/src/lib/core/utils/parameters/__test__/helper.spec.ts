@@ -7,6 +7,7 @@ import {
   updateParameterWithValues,
   toArrayViewModelSchema,
   toHybridConditionViewModel,
+  generateExpressionFromKey,
 } from '../helper';
 import type { DictionaryEditorItemProps, ParameterInfo, ValueSegment, OutputToken } from '@microsoft/designer-ui';
 import { GroupDropdownOptions, GroupType, TokenType, ValueSegmentType } from '@microsoft/designer-ui';
@@ -478,6 +479,21 @@ describe('core/utils/parameters/helper', () => {
         '{"newUnb3_1":"@{xpath(xml(triggerBody()), \'string(/*[local-name()=\\"DynamicsSOCSV\\"])\')}"}'
       );
     });
+  });
+
+  describe('generateExpressionFromKey', () => {
+    it.each<[string, string, string, string | undefined, boolean, boolean, boolean]>([
+      ['triggerOutputs()', 'triggerOutputs()', 'outputs.$', undefined, false, true, true],
+      ['triggerBody()', 'triggerOutputs()', 'outputs.$.body', undefined, false, false, true],
+      ['triggerBody()', 'triggerOutputs()', 'outputs.$.body', undefined, false, true, true],
+      [`triggerBody()['Title']`, 'triggerOutputs()', 'outputs.$.body/value.[*].Title', undefined, false, true, true],
+      [`triggerBody()?['Title']`, 'triggerOutputs()', 'outputs.$.body/value.[*].Title', undefined, false, false, true],
+    ])(
+      'returns %p for method:%p and tokenKey:%p',
+      (expectedResult, method, tokenKey, actionName, isInsideArray, required, overrideMethod) => {
+        expect(generateExpressionFromKey(method, tokenKey, actionName, isInsideArray, required, overrideMethod)).toBe(expectedResult);
+      }
+    );
   });
 
   describe('parameterValueToString', () => {
@@ -1670,7 +1686,7 @@ describe('core/utils/parameters/helper', () => {
           type: dataType,
         };
 
-        const result = getParameterEditorProps(inputParameter);
+        const result = getParameterEditorProps(inputParameter, [], false);
 
         expect(result).toMatchObject({
           editor: undefined,
@@ -1702,12 +1718,12 @@ describe('core/utils/parameters/helper', () => {
           type: dataType,
         };
 
-        const result = getParameterEditorProps(inputParameter);
+        const result = getParameterEditorProps(inputParameter, [], false);
 
         expect(result).toMatchObject({
           editor: dataType,
           editorOptions: undefined,
-          editorViewModel: toArrayViewModelSchema(inputParameter.itemSchema),
+          editorViewModel: { ...toArrayViewModelSchema(inputParameter.itemSchema), uncastedValue: [] },
           schema: inputSchema,
         });
       });
@@ -1740,7 +1756,7 @@ describe('core/utils/parameters/helper', () => {
           type: dataType,
         };
 
-        const result = getParameterEditorProps(inputParameter);
+        const result = getParameterEditorProps(inputParameter, [], false);
         const { editorViewModel, ...otherValues } = result;
 
         expect(otherValues).toEqual({
@@ -1752,7 +1768,7 @@ describe('core/utils/parameters/helper', () => {
           },
         });
 
-        expect(editorViewModel).toMatchObject(toArrayViewModelSchema(inputParameter.itemSchema));
+        expect(editorViewModel).toMatchObject({ ...toArrayViewModelSchema(inputParameter.itemSchema), uncastedValue: [] });
       });
     });
 
@@ -1774,7 +1790,7 @@ describe('core/utils/parameters/helper', () => {
           type: dataType,
         };
 
-        const result = getParameterEditorProps(inputParameter);
+        const result = getParameterEditorProps(inputParameter, [], false);
 
         expect(result).toMatchObject({
           editor: undefined,
@@ -1809,7 +1825,7 @@ describe('core/utils/parameters/helper', () => {
           value: true,
         };
 
-        const result = getParameterEditorProps(inputParameter);
+        const result = getParameterEditorProps(inputParameter, [], false);
 
         expect(result).toMatchObject({
           editor: 'combobox',
@@ -1868,7 +1884,7 @@ describe('core/utils/parameters/helper', () => {
           value: defaultValue,
         };
 
-        const result = getParameterEditorProps(inputParameter);
+        const result = getParameterEditorProps(inputParameter, [], false);
 
         expect(result).toMatchObject({
           editor: editorType,
@@ -1907,7 +1923,7 @@ describe('core/utils/parameters/helper', () => {
           type: dataType,
         };
 
-        const result = getParameterEditorProps(inputParameter);
+        const result = getParameterEditorProps(inputParameter, [], false);
 
         expect(result).toMatchObject({
           editor: editorType,
@@ -1922,6 +1938,7 @@ describe('core/utils/parameters/helper', () => {
         const dataType = 'string';
         const dynamicValuesExtension: LegacyDynamicValuesExtension = {
           capability: 'file-picker',
+          operationId: '',
           parameters: {
             // Implementation omitted for brevity.
             isFolder: true,
@@ -1955,7 +1972,7 @@ describe('core/utils/parameters/helper', () => {
           type: dataType,
         };
 
-        const result = getParameterEditorProps(inputParameter);
+        const result = getParameterEditorProps(inputParameter, [], false);
 
         expect(result).toMatchObject({
           editor: editorType,
@@ -1990,7 +2007,7 @@ describe('core/utils/parameters/helper', () => {
           type: dataType,
         };
 
-        const result = getParameterEditorProps(inputParameter);
+        const result = getParameterEditorProps(inputParameter, [], false);
 
         expect(result).toMatchObject({
           editor: editorType,
@@ -2027,7 +2044,7 @@ describe('core/utils/parameters/helper', () => {
           type: dataType,
         };
 
-        const result = getParameterEditorProps(inputParameter);
+        const result = getParameterEditorProps(inputParameter, [], false);
         const { editorViewModel, ...otherValues } = result;
 
         expect(otherValues).toMatchObject({
@@ -2075,7 +2092,7 @@ describe('core/utils/parameters/helper', () => {
           value: defaultValue,
         };
 
-        const result = getParameterEditorProps(inputParameter);
+        const result = getParameterEditorProps(inputParameter, [], false);
 
         expect(result).toMatchObject({
           editor: undefined,
@@ -2106,7 +2123,7 @@ describe('core/utils/parameters/helper', () => {
           type: dataType,
         };
 
-        const result = getParameterEditorProps(inputParameter);
+        const result = getParameterEditorProps(inputParameter, [], false);
 
         expect(result).toMatchObject({
           editor: editorType,
@@ -2135,7 +2152,7 @@ describe('core/utils/parameters/helper', () => {
           type: dataType,
         };
 
-        const result = getParameterEditorProps(inputParameter);
+        const result = getParameterEditorProps(inputParameter, [], false);
 
         expect(result).toMatchObject({
           editor: undefined,
@@ -2177,7 +2194,7 @@ describe('core/utils/parameters/helper', () => {
           visibility: 'advanced',
         };
 
-        const result = getParameterEditorProps(inputParameter);
+        const result = getParameterEditorProps(inputParameter, [], false);
 
         expect(result).toMatchObject({
           editor: 'combobox',
@@ -2216,7 +2233,7 @@ describe('core/utils/parameters/helper', () => {
           visibility: '',
         };
 
-        const result = getParameterEditorProps(inputParameter);
+        const result = getParameterEditorProps(inputParameter, [], false);
 
         expect(result).toMatchObject({
           editor: 'combobox',
