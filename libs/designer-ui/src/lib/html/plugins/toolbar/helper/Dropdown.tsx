@@ -106,6 +106,7 @@ export const DropDown = ({
         </button>
       </PopoverTrigger>
       <PopoverSurface
+        className="msla-html-editor-dropdown-items-container"
         onClick={() => {
           if (!stopCloseOnClickSelf) {
             handleClose();
