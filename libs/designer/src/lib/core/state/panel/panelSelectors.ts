@@ -28,6 +28,8 @@ export const useSelectedSearchOperationGroupId = () =>
 export const useSelectedSearchOperationId = () =>
   useSelector(createSelector(getPanelState, (state: PanelState) => state.selectedOperationId));
 
+export const usePinnedNodeId = () => useSelector(createSelector(getPanelState, (state: PanelState) => state.pinnedNode));
+
 export const useSelectedNodeId = () => useSelector(createSelector(getPanelState, (state: PanelState) => state.selectedNodes?.[0] ?? ''));
 export const useSelectedNodeIds = () => useSelector(createSelector(getPanelState, (state: PanelState) => state.selectedNodes));
 
