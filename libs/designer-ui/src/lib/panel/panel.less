@@ -141,18 +141,31 @@
     }
   }
 
-  .msla-panel-content-container {
-    margin: 0px -2rem;
-		padding: 1rem 2rem;
-		overflow-y: auto;
-		height: inherit;
-  }
+  .msla-panel-container-nested {
+    display: flex;
+    flex-direction: row;
+    gap: 16px;
+    padding: 16px;
 
-	.msla-node-details-panel {
-		height: 100%;
-		display: flex;
-		flex-direction: column;
-	}
+    > .msla-node-details-panel {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      max-width: 100%;
+
+      .msla-panel-content-container {
+        margin: 0;
+        padding: 1px;
+        overflow-y: auto;
+        height: inherit;
+      }
+    }
+
+    &.msla-panel-container-nested-dual > .msla-node-details-panel {
+      flex: 0.5 0 0;
+      min-width: 0;
+    }
+  }
 
   .msla-tab-component-container {
     .msla-panel-about-container {

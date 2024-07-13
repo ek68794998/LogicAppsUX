@@ -21,7 +21,7 @@ import {
   useOperationVisuals,
 } from '../../core/state/operation/operationSelector';
 import { useIsNodeSelected } from '../../core/state/panel/panelSelectors';
-import { changePanelNode, selectPanelTab, setSelectedNodeId } from '../../core/state/panel/panelSlice';
+import { changePanelNode, selectPanelTab, setPinnedNodeId, setSelectedNodeId } from '../../core/state/panel/panelSlice';
 import {
   useAllOperations,
   useConnectorName,
@@ -66,6 +66,7 @@ import { useHotkeys } from 'react-hotkeys-hook';
 import { RunAfterMenuItem } from '../menuItems/runAfterMenuItem';
 import { RUN_AFTER_PANEL_TAB } from './constants';
 import { shouldDisplayRunAfter } from './helpers';
+import { PinMenuItem } from '../menuItems/pinMenuItem';
 
 const DefaultNode = ({ targetPosition = Position.Top, sourcePosition = Position.Bottom, id }: NodeProps) => {
   const readOnly = useReadOnly();
@@ -231,6 +232,10 @@ const DefaultNode = ({ targetPosition = Position.Top, sourcePosition = Position.
     dispatch(setShowDeleteModal(true));
   }, [dispatch, id]);
 
+  const pinClick = useCallback(() => {
+    dispatch(setPinnedNodeId(id));
+  }, [dispatch, id]);
+
   const copyClick = useCallback(() => {
     setShowCopyCallout(true);
     dispatch(copyOperation({ nodeId: id }));
@@ -251,10 +256,11 @@ const DefaultNode = ({ targetPosition = Position.Top, sourcePosition = Position.
     () => [
       <DeleteMenuItem key={'delete'} onClick={deleteClick} showKey />,
       <CopyMenuItem key={'copy'} isTrigger={isTrigger} onClick={copyClick} showKey />,
+      <PinMenuItem key={'pin'} onClick={pinClick} />,
       ...(runData?.canResubmit ? [<ResubmitMenuItem key={'resubmit'} onClick={resubmitClick} />] : []),
       ...(runAfter ? [<RunAfterMenuItem key={'run after'} onClick={runAfterClick} />] : []),
     ],
-    [copyClick, deleteClick, isTrigger, resubmitClick, runData?.canResubmit, runAfterClick, runAfter]
+    [copyClick, deleteClick, isTrigger, pinClick, resubmitClick, runData?.canResubmit, runAfterClick, runAfter]
   );
 
   const opQuery = useOperationQuery(id);

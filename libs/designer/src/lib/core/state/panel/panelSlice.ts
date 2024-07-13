@@ -8,6 +8,7 @@ import type { PayloadAction } from '@reduxjs/toolkit';
 const initialState: PanelState = {
   collapsed: true,
   selectedNodes: [],
+  pinnedNode: undefined,
   relationshipIds: {
     graphId: 'root',
   },
@@ -50,6 +51,9 @@ export const panelSlice = createSlice({
       if (action.payload && action.payload !== state.panelLocation) {
         state.panelLocation = action.payload;
       }
+    },
+    setPinnedNodeId: (state, action: PayloadAction<string>) => {
+      state.pinnedNode = action.payload;
     },
     setSelectedNodeId: (state, action: PayloadAction<string>) => {
       state.selectedNodes = [action.payload];
@@ -170,6 +174,7 @@ export const {
   collapsePanel,
   clearPanel,
   updatePanelLocation,
+  setPinnedNodeId,
   setSelectedNodeId,
   setSelectedNodeIds,
   changePanelNode,

@@ -1,42 +1,40 @@
+import type { CommonPanelProps, PageActionTelemetryData } from '@microsoft/designer-ui';
+import { isCustomCode, PanelContainer, PanelScope, PanelSize } from '@microsoft/designer-ui';
+import {
+  isNullOrUndefined,
+  replaceWhiteSpaceWithUnderscore,
+  splitFileName,
+  SUBGRAPH_TYPES,
+  WorkflowService,
+} from '@microsoft/logic-apps-shared';
+import type React from 'react';
+import type { ReactElement } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import constants from '../../../common/constants';
 import type { AppDispatch, RootState } from '../../../core';
 import {
   clearPanel,
   collapsePanel,
   updateParameterValidation,
-  useNodeDisplayName,
   useNodeMetadata,
   useSelectedNodeId,
-  validateParameter,
+  validateParameter
 } from '../../../core';
 import { renameCustomCode } from '../../../core/state/customcode/customcodeSlice';
 import { useReadOnly, useSuppressDefaultNodeSelectFunctionality } from '../../../core/state/designerOptions/designerOptionsSelectors';
 import { setShowDeleteModal } from '../../../core/state/designerView/designerViewSlice';
-import { ErrorLevel, updateParameterEditorViewModel } from '../../../core/state/operation/operationMetadataSlice';
-import { useIconUri, useOperationErrorInfo } from '../../../core/state/operation/operationSelector';
-import { useIsPanelCollapsed, useSelectedPanelTabId } from '../../../core/state/panel/panelSelectors';
+import { updateParameterEditorViewModel } from '../../../core/state/operation/operationMetadataSlice';
+import { useIsPanelCollapsed, usePinnedNodeId, useSelectedPanelTabId } from '../../../core/state/panel/panelSelectors';
 import { expandPanel, selectPanelTab, setSelectedNodeId, updatePanelLocation } from '../../../core/state/panel/panelSlice';
-import { useOperationQuery } from '../../../core/state/selectors/actionMetadataSelector';
 import { useNodeDescription, useRunData, useRunInstance } from '../../../core/state/workflow/workflowSelectors';
 import { replaceId, setNodeDescription } from '../../../core/state/workflow/workflowSlice';
 import { isOperationNameValid, isRootNodeInGraph } from '../../../core/utils/graph';
-import { ParameterGroupKeys, getCustomCodeFileName, getParameterFromName } from '../../../core/utils/parameters/helper';
+import { getCustomCodeFileName, getParameterFromName, ParameterGroupKeys } from '../../../core/utils/parameters/helper';
 import { CommentMenuItem } from '../../menuItems/commentMenuItem';
 import { DeleteMenuItem } from '../../menuItems/deleteMenuItem';
+import { usePanelNodeData } from './usePanelNodeData';
 import { usePanelTabs } from './usePanelTabs';
-import type { CommonPanelProps, PageActionTelemetryData } from '@microsoft/designer-ui';
-import { PanelContainer, PanelScope, PanelSize, isCustomCode } from '@microsoft/designer-ui';
-import {
-  WorkflowService,
-  SUBGRAPH_TYPES,
-  isNullOrUndefined,
-  replaceWhiteSpaceWithUnderscore,
-  splitFileName,
-} from '@microsoft/logic-apps-shared';
-import type { ReactElement } from 'react';
-import type React from 'react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 
 export const NodeDetailsPanel = (props: CommonPanelProps): JSX.Element => {
   const { panelLocation } = props;
@@ -47,25 +45,27 @@ export const NodeDetailsPanel = (props: CommonPanelProps): JSX.Element => {
 
   const panelTabs = usePanelTabs();
   const selectedTab = useSelectedPanelTabId();
-
   const collapsed = useIsPanelCollapsed();
+
+  const pinnedNode = usePinnedNodeId();
   const selectedNode = useSelectedNodeId();
+
   const runData = useRunData(selectedNode);
   const { isTriggerNode, nodesMetadata, idReplacements } = useSelector((state: RootState) => ({
     isTriggerNode: isRootNodeInGraph(selectedNode, 'root', state.workflow.nodesMetadata),
     nodesMetadata: state.workflow.nodesMetadata,
     idReplacements: state.workflow.idReplacements,
   }));
-  const selectedNodeDisplayName = useNodeDisplayName(selectedNode);
 
   const [width, setWidth] = useState<string>(PanelSize.Auto);
 
   const inputs = useSelector((state: RootState) => state.operations.inputParameters[selectedNode]);
   const comment = useNodeDescription(selectedNode);
-  const iconUri = useIconUri(selectedNode);
   const nodeMetaData = useNodeMetadata(selectedNode);
   let showCommentBox = !isNullOrUndefined(comment);
-  const errorInfo = useOperationErrorInfo(selectedNode);
+
+  const pinnedNodeData = usePanelNodeData(pinnedNode);
+  const selectedNodeData = usePanelNodeData(selectedNode);
 
   const suppressDefaultNodeSelectFunctionality = useSuppressDefaultNodeSelectFunctionality();
 
@@ -159,15 +159,6 @@ export const NodeDetailsPanel = (props: CommonPanelProps): JSX.Element => {
   const togglePanel = (): void => (collapsed ? expand() : collapse());
   const dismissPanel = () => dispatch(clearPanel());
 
-  const opQuery = useOperationQuery(selectedNode);
-
-  const isLoading = useMemo(() => {
-    if (nodeMetaData?.subgraphType) {
-      return false;
-    }
-    return opQuery.isLoading;
-  }, [nodeMetaData?.subgraphType, opQuery.isLoading]);
-
   const runInstance = useRunInstance();
 
   const resubmitClick = useCallback(() => {
@@ -195,12 +186,7 @@ export const NodeDetailsPanel = (props: CommonPanelProps): JSX.Element => {
   return (
     <PanelContainer
       {...commonPanelProps}
-      cardIcon={iconUri}
-      comment={comment}
       noNodeSelected={!selectedNode}
-      isError={errorInfo?.level === ErrorLevel.Critical || opQuery?.isError}
-      errorMessage={errorInfo?.message}
-      isLoading={isLoading}
       panelScope={PanelScope.CardLevel}
       suppressDefaultNodeSelectFunctionality={suppressDefaultNodeSelectFunctionality}
       headerMenuItems={headerMenuItems}
@@ -210,7 +196,8 @@ export const NodeDetailsPanel = (props: CommonPanelProps): JSX.Element => {
       selectTab={(tabId: string) => {
         dispatch(selectPanelTab(tabId));
       }}
-      nodeId={selectedNode}
+      node={selectedNodeData}
+      pinnedNode={pinnedNodeData}
       readOnlyMode={readOnly}
       canResubmit={runData?.canResubmit ?? false}
       resubmitOperation={resubmitClick}
@@ -235,7 +222,6 @@ export const NodeDetailsPanel = (props: CommonPanelProps): JSX.Element => {
       }}
       trackEvent={handleTrackEvent}
       onCommentChange={onCommentChange}
-      title={selectedNodeDisplayName}
       onTitleChange={onTitleChange}
       onTitleBlur={onTitleBlur}
       setCurrWidth={setWidth}
