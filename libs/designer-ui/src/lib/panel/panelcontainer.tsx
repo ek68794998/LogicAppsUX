@@ -1,6 +1,6 @@
 import type { ILayerProps } from '@fluentui/react';
 import { MessageBar, MessageBarType } from '@fluentui/react';
-import { mergeClasses, OverlayDrawer, Spinner } from '@fluentui/react-components';
+import { Divider, mergeClasses, OverlayDrawer, Spinner } from '@fluentui/react-components';
 import type { IPanelHeaderRenderer, IPanelProps } from '@fluentui/react/lib/Panel';
 import type { LogicAppsV2 } from '@microsoft/logic-apps-shared';
 import { useCallback } from 'react';
@@ -152,20 +152,23 @@ export const PanelContainer = ({
   });
 
   const renderPanelContents = useCallback(
-    (contentsNode: NonNullable<typeof node>, position: 'left' | 'right'): JSX.Element => (
-      <div className={mergeClasses('msla-panel-contents', `msla-panel-contents-${position}`)}>
-        {(renderHeader ?? defaultRenderHeader)(contentsNode)}
-        {contentsNode.isLoading ? (
-          <div className="msla-loading-container">
-            <Spinner size={'large'} />
-          </div>
-        ) : contentsNode.isError ? (
-          <MessageBar messageBarType={MessageBarType.error}>{contentsNode.errorMessage ?? panelErrorMessage}</MessageBar>
-        ) : (
-          <PanelContent tabs={tabs} trackEvent={trackEvent} nodeId={contentsNode.nodeId} selectedTab={selectedTab} selectTab={selectTab} />
-        )}
-      </div>
-    ),
+    (contentsNode: NonNullable<typeof node>, position: 'left' | 'right'): JSX.Element => {
+      const { errorMessage, isError, isLoading, nodeId } = contentsNode;
+      return (
+        <div className={mergeClasses('msla-panel-contents', `msla-panel-contents-${position}`)}>
+          {(renderHeader ?? defaultRenderHeader)(contentsNode)}
+          {isLoading ? (
+            <div className="msla-loading-container">
+              <Spinner size={'large'} />
+            </div>
+          ) : isError ? (
+            <MessageBar messageBarType={MessageBarType.error}>{errorMessage ?? panelErrorMessage}</MessageBar>
+          ) : (
+            <PanelContent tabs={tabs} trackEvent={trackEvent} nodeId={nodeId} selectedTab={selectedTab} selectTab={selectTab} />
+          )}
+        </div>
+      );
+    },
     [defaultRenderHeader, panelErrorMessage, renderHeader, selectTab, selectedTab, tabs, trackEvent]
   );
 
@@ -179,7 +182,6 @@ export const PanelContainer = ({
       open={true}
       position={panelLocation === PanelLocation.Right ? 'end' : 'start'}
       style={{ width: pinnedNode ? PanelSize.DualView : width }}
-      
     >
       {!isCollapsed && (
         <>
@@ -189,7 +191,12 @@ export const PanelContainer = ({
             ) : (
               <>
                 {node ? renderPanelContents(node, 'left') : null}
-                {pinnedNode ? renderPanelContents(pinnedNode, 'right') : null}
+                {pinnedNode ? (
+                  <>
+                    <Divider vertical={true} />
+                    {renderPanelContents(pinnedNode, 'right')}
+                  </>
+                ) : null}
               </>
             )}
           </div>

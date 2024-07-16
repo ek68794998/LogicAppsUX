@@ -20,7 +20,7 @@ import {
   useTokenDependencies,
   useOperationVisuals,
 } from '../../core/state/operation/operationSelector';
-import { useIsNodeSelected } from '../../core/state/panel/panelSelectors';
+import { useIsNodeSelected, usePinnedNodeId } from '../../core/state/panel/panelSelectors';
 import { changePanelNode, selectPanelTab, setPinnedNodeId, setSelectedNodeId } from '../../core/state/panel/panelSlice';
 import {
   useAllOperations,
@@ -75,6 +75,7 @@ const DefaultNode = ({ targetPosition = Position.Top, sourcePosition = Position.
 
   const dispatch = useDispatch<AppDispatch>();
   const rootState = useSelector((state: RootState) => state);
+  const pinnedNodeId = usePinnedNodeId();
   const operationsInfo = useAllOperations();
   const errorInfo = useOperationErrorInfo(id);
   const metadata = useNodeMetadata(id);
@@ -233,8 +234,8 @@ const DefaultNode = ({ targetPosition = Position.Top, sourcePosition = Position.
   }, [dispatch, id]);
 
   const pinClick = useCallback(() => {
-    dispatch(setPinnedNodeId(id));
-  }, [dispatch, id]);
+    dispatch(setPinnedNodeId(id === pinnedNodeId ? '' : id));
+  }, [dispatch, id, pinnedNodeId]);
 
   const copyClick = useCallback(() => {
     setShowCopyCallout(true);
@@ -256,11 +257,11 @@ const DefaultNode = ({ targetPosition = Position.Top, sourcePosition = Position.
     () => [
       <DeleteMenuItem key={'delete'} onClick={deleteClick} showKey />,
       <CopyMenuItem key={'copy'} isTrigger={isTrigger} onClick={copyClick} showKey />,
-      <PinMenuItem key={'pin'} onClick={pinClick} />,
+      <PinMenuItem key={'pin'} nodeId={id} onClick={pinClick} />,
       ...(runData?.canResubmit ? [<ResubmitMenuItem key={'resubmit'} onClick={resubmitClick} />] : []),
       ...(runAfter ? [<RunAfterMenuItem key={'run after'} onClick={runAfterClick} />] : []),
     ],
-    [copyClick, deleteClick, isTrigger, pinClick, resubmitClick, runData?.canResubmit, runAfterClick, runAfter]
+    [copyClick, deleteClick, id, isTrigger, pinClick, resubmitClick, runData?.canResubmit, runAfterClick, runAfter]
   );
 
   const opQuery = useOperationQuery(id);

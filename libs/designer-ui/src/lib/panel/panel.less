@@ -144,23 +144,28 @@
   .msla-panel-container-nested {
     box-sizing: border-box;
     display: flex;
+    flex: 1;
     flex-direction: row;
-    gap: 16px;
-    padding: 16px;
+    max-height: 100%;
     width: 100%;
 
-    > .msla-panel-contents {
-      height: 100%;
-      display: flex;
-      flex: 1;
-      flex-direction: column;
-      max-width: 100%;
+    > div {
+      flex: 0;
 
-      .msla-panel-content-container {
-        margin: 0;
-        padding: 1px;
+      &.msla-panel-contents {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        max-width: 100%;
         overflow-y: auto;
-        height: inherit;
+        padding: 16px;
+
+        .msla-panel-content-container {
+          margin: 0;
+          padding: 1px;
+          overflow-y: auto;
+          height: inherit;
+        }
       }
     }
 
