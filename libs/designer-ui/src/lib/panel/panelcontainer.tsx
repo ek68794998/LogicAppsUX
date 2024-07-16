@@ -151,50 +151,47 @@ export const PanelContainer = ({
     description: 'label for panel error',
   });
 
+  const renderPanelContents = useCallback(
+    (contentsNode: NonNullable<typeof node>, position: 'left' | 'right'): JSX.Element => (
+      <div className={mergeClasses('msla-panel-contents', `msla-panel-contents-${position}`)}>
+        {(renderHeader ?? defaultRenderHeader)(contentsNode)}
+        {contentsNode.isLoading ? (
+          <div className="msla-loading-container">
+            <Spinner size={'large'} />
+          </div>
+        ) : contentsNode.isError ? (
+          <MessageBar messageBarType={MessageBarType.error}>{contentsNode.errorMessage ?? panelErrorMessage}</MessageBar>
+        ) : (
+          <PanelContent tabs={tabs} trackEvent={trackEvent} nodeId={contentsNode.nodeId} selectedTab={selectedTab} selectTab={selectTab} />
+        )}
+      </div>
+    ),
+    [defaultRenderHeader, panelErrorMessage, renderHeader, selectTab, selectedTab, tabs, trackEvent]
+  );
+
+  const isEmptyPane = noNodeSelected && panelScope === PanelScope.CardLevel;
+
   return (
     <OverlayDrawer
       aria-label={panelLabel}
       className="msla-panel-container"
       modalType="non-modal"
       open={true}
-      position={panelLocation === PanelLocation.Right ? "end" : "start"}
+      position={panelLocation === PanelLocation.Right ? 'end' : 'start'}
       style={{ width: pinnedNode ? PanelSize.DualView : width }}
+      
     >
       {!isCollapsed && (
         <>
-          <div className={mergeClasses("msla-panel-container-nested", pinnedNode && "msla-panel-container-nested-dual")}>
-            {node ? (
-              <div className="left">
-                {(renderHeader ?? defaultRenderHeader)(node)}
-                {noNodeSelected && panelScope === PanelScope.CardLevel ? (
-                  <EmptyContent />
-                ) : node.isLoading ? (
-                  <div className="msla-loading-container">
-                    <Spinner size={'large'} />
-                  </div>
-                ) : node.isError ? (
-                  <MessageBar messageBarType={MessageBarType.error}>{node.errorMessage ?? panelErrorMessage}</MessageBar>
-                ) : (
-                  <PanelContent tabs={tabs} trackEvent={trackEvent} nodeId={node.nodeId} selectedTab={selectedTab} selectTab={selectTab} />
-                )}
-              </div>
-            ) : null}
-            {pinnedNode ? (
-              <div className="right">
-                {(renderHeader ?? defaultRenderHeader)(pinnedNode)}
-                {noNodeSelected && panelScope === PanelScope.CardLevel ? (
-                  <EmptyContent />
-                ) : pinnedNode.isLoading ? (
-                  <div className="msla-loading-container">
-                    <Spinner size={'large'} />
-                  </div>
-                ) : pinnedNode.isError ? (
-                  <MessageBar messageBarType={MessageBarType.error}>{pinnedNode.errorMessage ?? panelErrorMessage}</MessageBar>
-                ) : (
-                  <PanelContent tabs={tabs} trackEvent={trackEvent} nodeId={pinnedNode.nodeId} selectedTab={selectedTab} selectTab={selectTab} />
-                )}
-              </div>
-            ) : null}
+          <div className={mergeClasses('msla-panel-container-nested', !isEmptyPane && pinnedNode && 'msla-panel-container-nested-dual')}>
+            {isEmptyPane ? (
+              <EmptyContent />
+            ) : (
+              <>
+                {node ? renderPanelContents(node, 'left') : null}
+                {pinnedNode ? renderPanelContents(pinnedNode, 'right') : null}
+              </>
+            )}
           </div>
           {canResize ? <PanelResizer updatePanelWidth={setCurrWidth} /> : null}
         </>

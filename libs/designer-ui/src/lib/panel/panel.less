@@ -142,14 +142,17 @@
   }
 
   .msla-panel-container-nested {
+    box-sizing: border-box;
     display: flex;
     flex-direction: row;
     gap: 16px;
     padding: 16px;
+    width: 100%;
 
-    > .msla-node-details-panel {
+    > .msla-panel-contents {
       height: 100%;
       display: flex;
+      flex: 1;
       flex-direction: column;
       max-width: 100%;
 
@@ -161,7 +164,7 @@
       }
     }
 
-    &.msla-panel-container-nested-dual > .msla-node-details-panel {
+    &.msla-panel-container-nested-dual > .msla-panel-contents {
       flex: 0.5 0 0;
       min-width: 0;
     }
