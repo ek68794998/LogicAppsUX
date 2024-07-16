@@ -11,6 +11,7 @@ const SchemaNode = (props: NodeProps<SchemaNodeReactFlowDataProps>) => {
   const updateNodeInternals = useUpdateNodeInternals();
   const edges = useEdges();
   const styles = useStyles();
+  // danielle update this to move away from edges
   const isConnected = useMemo(() => edges.some((edge) => edge.source === id || edge.target === id), [edges, id]);
 
   useEffect(() => {
@@ -22,9 +23,7 @@ const SchemaNode = (props: NodeProps<SchemaNodeReactFlowDataProps>) => {
         type={isLeftDirection ? 'source' : 'target'}
         position={Position.Left}
         className={mergeClasses(styles.handleWrapper, isConnected ? styles.handleConnected : '')}
-        isConnectableStart={isLeftDirection}
-        isConnectableEnd={!isLeftDirection}
-        style={{ left: '-7px' }}
+        isConnectable={true}
       />
     </div>
   );
