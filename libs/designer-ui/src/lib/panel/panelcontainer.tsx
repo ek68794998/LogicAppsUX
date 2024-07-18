@@ -82,14 +82,7 @@ export const PanelContainer = ({
 
   const defaultRenderHeader = useCallback(
     (headerNode: PanelContainerNodeData): JSX.Element => {
-      const {
-        comment,
-        displayName,
-        iconUri,
-        isError,
-        isLoading,
-        nodeId,
-      } = headerNode;
+      const { comment, displayName, iconUri, isError, isLoading, nodeId } = headerNode;
 
       return (
         <PanelHeader
@@ -147,8 +140,6 @@ export const PanelContainer = ({
     id: '62Ypnr',
     description: 'label for panel error',
   });
-
-  const selectedElement = nodeId ? document.getElementById(`msla-node-${nodeId}`) ?? undefined : undefined;
 
   const renderPanelContents = useCallback(
     (contentsNode: NonNullable<typeof node>, position: 'left' | 'right'): JSX.Element => {
