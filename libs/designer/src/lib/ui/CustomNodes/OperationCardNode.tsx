@@ -21,7 +21,7 @@ import {
   useOperationVisuals,
 } from '../../core/state/operation/operationSelector';
 import { useIsNodeSelected } from '../../core/state/panel/panelSelectors';
-import { usePinnedNodeId } from '../../core/state/panel/panelV2Selectors';
+import { useIsNodePinned, usePinnedNodeId } from '../../core/state/panel/panelV2Selectors';
 import { changePanelNode, selectPanelTab, setPinnedNodeId, setSelectedNodeId } from '../../core/state/panel/panelSlice';
 import {
   useAllOperations,
@@ -174,6 +174,7 @@ const DefaultNode = ({ targetPosition = Position.Top, sourcePosition = Position.
     [readOnly, metadata, dependencies]
   );
 
+  const pinned = useIsNodePinned(id);
   const selected = useIsNodeSelected(id);
   const nodeComment = useNodeDescription(id);
   const connectionResult = useNodeConnectionName(id);
@@ -371,7 +372,7 @@ const DefaultNode = ({ targetPosition = Position.Top, sourcePosition = Position.
             onDeleteClick={deleteClick}
             onCopyClick={copyClick}
             operationName={operationSummary?.result}
-            selected={selected}
+            selectionMode={selected ? 'selected' : pinned ? 'pinned' : false}
             contextMenuItems={contextMenuItems}
             setFocus={shouldFocus}
             staticResultsEnabled={!!staticResults}

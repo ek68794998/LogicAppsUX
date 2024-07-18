@@ -1,7 +1,6 @@
 import type { ILayerProps } from '@fluentui/react';
 import { MessageBar, MessageBarType } from '@fluentui/react';
 import { Divider, mergeClasses, OverlayDrawer, Spinner } from '@fluentui/react-components';
-import type { IPanelHeaderRenderer, IPanelProps } from '@fluentui/react/lib/Panel';
 import type { LogicAppsV2 } from '@microsoft/logic-apps-shared';
 import { useCallback } from 'react';
 import { useIntl } from 'react-intl';
@@ -46,7 +45,6 @@ export type PanelContainerProps = {
   trackEvent(data: PageActionTelemetryData): void;
   toggleCollapse: () => void;
   onCommentChange: (panelCommentChangeEvent?: string) => void;
-  renderHeader?: (props?: IPanelProps, defaultrender?: IPanelHeaderRenderer, headerTextId?: string) => JSX.Element;
   onTitleChange: TitleChangeHandler;
   onTitleBlur?: (prevTitle: string) => void;
   setCurrWidth: (width: string) => void;
@@ -69,7 +67,6 @@ export const PanelContainer = ({
   // TODO layerProps,
   toggleCollapse,
   trackEvent,
-  renderHeader,
   onCommentChange,
   onTitleChange,
   onTitleBlur,
@@ -80,7 +77,7 @@ export const PanelContainer = ({
 
   const canResize = isResizeable && !pinnedNode;
 
-  const defaultRenderHeader = useCallback(
+  const renderHeader = useCallback(
     (headerNode: PanelContainerNodeData): JSX.Element => {
       const { comment, displayName, iconUri, isError, isLoading, nodeId } = headerNode;
 
@@ -142,11 +139,11 @@ export const PanelContainer = ({
   });
 
   const renderPanelContents = useCallback(
-    (contentsNode: NonNullable<typeof node>, position: 'left' | 'right'): JSX.Element => {
+    (contentsNode: NonNullable<typeof node>, type: 'pinned' | 'selected'): JSX.Element => {
       const { errorMessage, isError, isLoading, nodeId, onSelectTab, selectedTab, tabs } = contentsNode;
       return (
-        <div className={mergeClasses('msla-panel-contents', `msla-panel-contents-${position}`)}>
-          {(renderHeader ?? defaultRenderHeader)(contentsNode)}
+        <div className={mergeClasses('msla-panel-contents', `msla-panel-contents-${type}`)}>
+          {renderHeader(contentsNode)}
           {isLoading ? (
             <div className="msla-loading-container">
               <Spinner size={'large'} />
@@ -159,7 +156,7 @@ export const PanelContainer = ({
         </div>
       );
     },
-    [defaultRenderHeader, panelErrorMessage, renderHeader, trackEvent]
+    [renderHeader, panelErrorMessage, trackEvent]
   );
 
   const isEmptyPane = noNodeSelected && panelScope === PanelScope.CardLevel;
@@ -180,11 +177,11 @@ export const PanelContainer = ({
               <EmptyContent />
             ) : (
               <>
-                {node ? renderPanelContents(node, 'left') : null}
+                {node ? renderPanelContents(node, 'pinned') : null}
                 {pinnedNode ? (
                   <>
                     <Divider vertical={true} />
-                    {renderPanelContents(pinnedNode, 'right')}
+                    {renderPanelContents(pinnedNode, 'selected')}
                   </>
                 ) : null}
               </>
