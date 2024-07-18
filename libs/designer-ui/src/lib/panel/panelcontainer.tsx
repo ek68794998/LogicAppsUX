@@ -148,6 +148,8 @@ export const PanelContainer = ({
     description: 'label for panel error',
   });
 
+  const selectedElement = nodeId ? document.getElementById(`msla-node-${nodeId}`) ?? undefined : undefined;
+
   const renderPanelContents = useCallback(
     (contentsNode: NonNullable<typeof node>, position: 'left' | 'right'): JSX.Element => {
       const { errorMessage, isError, isLoading, nodeId, onSelectTab, selectedTab, tabs } = contentsNode;
