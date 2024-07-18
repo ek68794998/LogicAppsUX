@@ -142,17 +142,19 @@ export const PanelContainer = ({
     (contentsNode: NonNullable<typeof node>, type: 'pinned' | 'selected'): JSX.Element => {
       const { errorMessage, isError, isLoading, nodeId, onSelectTab, selectedTab, tabs } = contentsNode;
       return (
-        <div className={mergeClasses('msla-panel-contents', `msla-panel-contents-${type}`)}>
+        <div className={mergeClasses('msla-panel-layout', `msla-panel-layout-${type}`)}>
           {renderHeader(contentsNode)}
-          {isLoading ? (
-            <div className="msla-loading-container">
-              <Spinner size={'large'} />
-            </div>
-          ) : isError ? (
-            <MessageBar messageBarType={MessageBarType.error}>{errorMessage ?? panelErrorMessage}</MessageBar>
-          ) : (
-            <PanelContent tabs={tabs} trackEvent={trackEvent} nodeId={nodeId} selectedTab={selectedTab} selectTab={onSelectTab} />
-          )}
+          <div className="msla-panel-contents">
+            {isLoading ? (
+              <div className="msla-loading-container">
+                <Spinner size={'large'} />
+              </div>
+            ) : isError ? (
+              <MessageBar messageBarType={MessageBarType.error}>{errorMessage ?? panelErrorMessage}</MessageBar>
+            ) : (
+              <PanelContent tabs={tabs} trackEvent={trackEvent} nodeId={nodeId} selectedTab={selectedTab} selectTab={onSelectTab} />
+            )}
+          </div>
         </div>
       );
     },

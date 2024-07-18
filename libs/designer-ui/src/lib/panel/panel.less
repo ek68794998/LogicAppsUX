@@ -18,8 +18,9 @@
   }
 
   .msla-panel-header {
-    margin-top: 12px;
-    margin-bottom: 12px;
+    border-top: 3px solid transparent;
+    padding-top: 12px;
+    padding-bottom: 12px;
 
     .msla-panel-card-header {
       flex-grow: 1;
@@ -149,27 +150,36 @@
     max-height: 100%;
     width: 100%;
 
-    > div {
-      flex: 0;
+    &.msla-panel-container-nested-dual .msla-panel-layout {
+      flex: 0 0 50%;
+      min-width: 0;
+    }
 
-      &.msla-panel-contents {
-        border-top: 3px solid transparent;
-        display: flex;
-        flex: 1;
-        flex-direction: column;
-        max-width: 100%;
-        overflow-y: auto;
-        padding: 16px;
+    .msla-panel-layout {
+      flex: 1;
 
-        &.msla-panel-contents-pinned {
-          border-top-color: @pinned-item-color;
-        }
+      &.msla-panel-layout-pinned .msla-panel-header {
+        border-top-color: @pinned-item-color;
+      }
 
-        .msla-panel-content-container {
-          margin: 0;
-          padding: 1px;
+      > div {
+        flex: 0;
+
+        &.msla-panel-contents {
+          border-top: 3px solid transparent;
+          display: flex;
+          flex: 0 0 50%;
+          flex-direction: column;
+          max-width: 100%;
           overflow-y: auto;
-          height: inherit;
+          padding: 0 16px 16px;
+
+          .msla-panel-content-container {
+            margin: 0;
+            padding: 1px;
+            overflow-y: auto;
+            height: inherit;
+          }
         }
       }
     }
@@ -259,6 +269,8 @@
 }
 
 .connection-display {
+  width: min-content;
+
   .connection-info {
     align-items: flex-start;
     display: flex;
