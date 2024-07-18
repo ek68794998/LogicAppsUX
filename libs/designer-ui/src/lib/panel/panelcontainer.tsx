@@ -78,7 +78,9 @@ export const PanelContainer = ({
   const intl = useIntl();
 
   const canResize = isResizeable && !pinnedNode;
+  const pinnedNodeIfDifferent = pinnedNode && pinnedNode.nodeId !== node?.nodeId ? pinnedNode : undefined;
   const pinnedNodeId = pinnedNode?.nodeId;
+  const isEmptyPane = noNodeSelected && panelScope === PanelScope.CardLevel;
 
   const renderHeader = useCallback(
     (headerNode: PanelContainerNodeData): JSX.Element => {
@@ -168,8 +170,6 @@ export const PanelContainer = ({
     [renderHeader, panelErrorMessage, trackEvent]
   );
 
-  const isEmptyPane = noNodeSelected && panelScope === PanelScope.CardLevel;
-
   return (
     <OverlayDrawer
       aria-label={panelLabel}
@@ -180,20 +180,25 @@ export const PanelContainer = ({
       }}
       open={true}
       position={panelLocation === PanelLocation.Right ? 'end' : 'start'}
-      style={{ width: pinnedNode ? PanelSize.DualView : width }}
+      style={{ width: pinnedNodeIfDifferent ? PanelSize.DualView : width }}
     >
       {!isCollapsed && (
         <>
-          <div className={mergeClasses('msla-panel-container-nested', !isEmptyPane && pinnedNode && 'msla-panel-container-nested-dual')}>
+          <div
+            className={mergeClasses(
+              'msla-panel-container-nested',
+              !isEmptyPane && pinnedNodeIfDifferent && 'msla-panel-container-nested-dual'
+            )}
+          >
             {isEmptyPane ? (
               <EmptyContent />
             ) : (
               <>
                 {node ? renderPanelContents(node, 'selected') : null}
-                {pinnedNode ? (
+                {pinnedNodeIfDifferent ? (
                   <>
                     <Divider vertical={true} />
-                    {renderPanelContents(pinnedNode, 'pinned')}
+                    {renderPanelContents(pinnedNodeIfDifferent, 'pinned')}
                   </>
                 ) : null}
               </>
