@@ -42,6 +42,7 @@ export type PanelContainerProps = {
   layerProps?: ILayerProps;
   canResubmit?: boolean;
   resubmitOperation?: () => void;
+  onUnpinAction?: () => void;
   trackEvent(data: PageActionTelemetryData): void;
   toggleCollapse: () => void;
   onCommentChange: (panelCommentChangeEvent?: string) => void;
@@ -59,6 +60,7 @@ export const PanelContainer = ({
   headerMenuItems,
   canResubmit,
   resubmitOperation,
+  onUnpinAction,
   showCommentBox,
   readOnlyMode,
   node,
@@ -76,10 +78,12 @@ export const PanelContainer = ({
   const intl = useIntl();
 
   const canResize = isResizeable && !pinnedNode;
+  const pinnedNodeId = pinnedNode?.nodeId;
 
   const renderHeader = useCallback(
     (headerNode: PanelContainerNodeData): JSX.Element => {
       const { comment, displayName, iconUri, isError, isLoading, nodeId } = headerNode;
+      const canUnpin = !!onUnpinAction && pinnedNodeId === nodeId;
 
       return (
         <PanelHeader
@@ -99,6 +103,7 @@ export const PanelContainer = ({
           isLoading={isLoading}
           comment={comment}
           canResubmit={canResubmit}
+          onUnpinAction={canUnpin ? onUnpinAction : undefined}
           resubmitOperation={resubmitOperation}
           horizontalPadding={horizontalPadding}
           commentChange={onCommentChange}
@@ -118,7 +123,9 @@ export const PanelContainer = ({
       headerMenuItems,
       readOnlyMode,
       canResubmit,
+      pinnedNodeId,
       resubmitOperation,
+      onUnpinAction,
       onCommentChange,
       toggleCollapse,
       onTitleChange,
@@ -182,11 +189,11 @@ export const PanelContainer = ({
               <EmptyContent />
             ) : (
               <>
-                {node ? renderPanelContents(node, 'pinned') : null}
+                {node ? renderPanelContents(node, 'selected') : null}
                 {pinnedNode ? (
                   <>
                     <Divider vertical={true} />
-                    {renderPanelContents(pinnedNode, 'selected')}
+                    {renderPanelContents(pinnedNode, 'pinned')}
                   </>
                 ) : null}
               </>

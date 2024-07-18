@@ -13,7 +13,7 @@ import { useReadOnly, useSuppressDefaultNodeSelectFunctionality } from '../../..
 import { setShowDeleteModal } from '../../../core/state/designerView/designerViewSlice';
 import { updateParameterEditorViewModel } from '../../../core/state/operation/operationMetadataSlice';
 import { useIsPanelCollapsed } from '../../../core/state/panel/panelSelectors';
-import { expandPanel, setSelectedNodeId, updatePanelLocation } from '../../../core/state/panel/panelSlice';
+import { expandPanel, setPinnedNodeId, setSelectedNodeId, updatePanelLocation } from '../../../core/state/panel/panelSlice';
 import { usePinnedNodeId } from '../../../core/state/panel/panelV2Selectors';
 import { useNodeDescription, useRunData, useRunInstance } from '../../../core/state/workflow/workflowSelectors';
 import { replaceId, setNodeDescription } from '../../../core/state/workflow/workflowSlice';
@@ -156,6 +156,8 @@ export const NodeDetailsPanel = (props: CommonPanelProps): JSX.Element => {
   const togglePanel = (): void => (collapsed ? expand() : collapse());
   const dismissPanel = () => dispatch(clearPanel());
 
+  const unpinAction = () => dispatch(setPinnedNodeId(''));
+
   const runInstance = useRunInstance();
 
   const resubmitClick = useCallback(() => {
@@ -193,6 +195,7 @@ export const NodeDetailsPanel = (props: CommonPanelProps): JSX.Element => {
       readOnlyMode={readOnly}
       canResubmit={runData?.canResubmit ?? false}
       resubmitOperation={resubmitClick}
+      onUnpinAction={unpinAction}
       toggleCollapse={() => {
         // Only run validation when collapsing the panel
         if (!collapsed) {

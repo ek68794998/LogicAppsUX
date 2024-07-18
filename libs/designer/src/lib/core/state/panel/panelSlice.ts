@@ -107,6 +107,9 @@ export const panelSlice = createSlice({
       state.panelV2.operationContent = getInitialOperationContentState();
       state.panelV2.previousPanelMode = undefined;
       state.panelV2.workflowParametersContent = getInitialWorkflowParametersContentState();
+      state.panelV2.connectionContent.selectedNodeIds = [];
+      state.panelV2.discoveryContent.selectedNodeIds = [];
+      delete state.panelV2.operationContent.selectedNodeId;
       /* END V2 LOGIC */
     },
     updatePanelLocation: (state, action: PayloadAction<PanelLocation | undefined>) => {
