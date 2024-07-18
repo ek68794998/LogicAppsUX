@@ -259,16 +259,31 @@
 }
 
 .connection-display {
-  display: flex;
-  margin: 8px 0px;
-  gap: 8px;
-  justify-content: space-between;
-
   .connection-info {
+    align-items: flex-start;
     display: flex;
-    column-gap: 8px;
+    flex-direction: row;
     flex-wrap: wrap;
-    align-items: center;
+    justify-content: flex-start;
+
+    .connection-info-labels {
+      align-items: center;
+      display: flex;
+      flex-direction: row;
+      gap: 8px;
+
+      > svg {
+        flex: 0 0 16px;
+      }
+
+      .label {
+        white-space: nowrap;
+      }
+    }
+
+    .change-connection-button {
+      margin-left: 15px;
+    }
   }
 
   .connection-info-error {
@@ -296,4 +311,8 @@
       background: @ms-color-primaryBackground;
     }
   }
+}
+
+div.msla-panel-host-container {
+  z-index: auto;
 }

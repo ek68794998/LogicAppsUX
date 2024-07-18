@@ -166,6 +166,9 @@ export const PanelContainer = ({
       aria-label={panelLabel}
       className="msla-panel-container"
       modalType="non-modal"
+      mountNode={{
+        className: 'msla-panel-host-container',
+      }}
       open={true}
       position={panelLocation === PanelLocation.Right ? 'end' : 'start'}
       style={{ width: pinnedNode ? PanelSize.DualView : width }}
