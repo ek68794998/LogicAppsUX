@@ -1,7 +1,7 @@
 import { MenuItem } from '@fluentui/react-components';
 import { bundleIcon, Pin24Filled, Pin24Regular, PinOff24Filled, PinOff24Regular } from '@fluentui/react-icons';
 import { LogEntryLevel, LoggerService } from '@microsoft/logic-apps-shared';
-import { usePinnedNodeId } from '../../core/state/panel/panelSelectors';
+import { usePinnedNodeId } from '../../core/state/panel/panelV2Selectors';
 import { useCallback } from 'react';
 import { useIntl } from 'react-intl';
 

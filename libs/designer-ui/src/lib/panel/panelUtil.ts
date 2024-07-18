@@ -25,7 +25,12 @@ export const PanelSize = {
 } as const;
 export type PanelSize = (typeof PanelSize)[keyof typeof PanelSize];
 
-export type PanelTabFn = (intl: IntlShape) => PanelTab;
+export type PanelTabFn = (intl: IntlShape, nodeId: string) => PanelTab;
+
+export interface PanelTabProps {
+  nodeId: string;
+}
+
 export interface PanelTab {
   id: string;
   title: string;

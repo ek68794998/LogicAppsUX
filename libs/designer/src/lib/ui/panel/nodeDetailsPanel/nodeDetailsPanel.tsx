@@ -1,16 +1,3 @@
-import type { CommonPanelProps, PageActionTelemetryData } from '@microsoft/designer-ui';
-import { isCustomCode, PanelContainer, PanelScope, PanelSize } from '@microsoft/designer-ui';
-import {
-  isNullOrUndefined,
-  replaceWhiteSpaceWithUnderscore,
-  splitFileName,
-  SUBGRAPH_TYPES,
-  WorkflowService,
-} from '@microsoft/logic-apps-shared';
-import type React from 'react';
-import type { ReactElement } from 'react';
-import { useCallback, useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import constants from '../../../common/constants';
 import type { AppDispatch, RootState } from '../../../core';
 import {
@@ -25,8 +12,9 @@ import { renameCustomCode } from '../../../core/state/customcode/customcodeSlice
 import { useReadOnly, useSuppressDefaultNodeSelectFunctionality } from '../../../core/state/designerOptions/designerOptionsSelectors';
 import { setShowDeleteModal } from '../../../core/state/designerView/designerViewSlice';
 import { updateParameterEditorViewModel } from '../../../core/state/operation/operationMetadataSlice';
-import { useIsPanelCollapsed, usePinnedNodeId, useSelectedPanelTabId } from '../../../core/state/panel/panelSelectors';
-import { expandPanel, selectPanelTab, setSelectedNodeId, updatePanelLocation } from '../../../core/state/panel/panelSlice';
+import { useIsPanelCollapsed } from '../../../core/state/panel/panelSelectors';
+import { expandPanel, setSelectedNodeId, updatePanelLocation } from '../../../core/state/panel/panelSlice';
+import { usePinnedNodeId } from '../../../core/state/panel/panelV2Selectors';
 import { useNodeDescription, useRunData, useRunInstance } from '../../../core/state/workflow/workflowSelectors';
 import { replaceId, setNodeDescription } from '../../../core/state/workflow/workflowSlice';
 import { isOperationNameValid, isRootNodeInGraph } from '../../../core/utils/graph';
@@ -34,7 +22,19 @@ import { getCustomCodeFileName, getParameterFromName, ParameterGroupKeys } from 
 import { CommentMenuItem } from '../../menuItems/commentMenuItem';
 import { DeleteMenuItem } from '../../menuItems/deleteMenuItem';
 import { usePanelNodeData } from './usePanelNodeData';
-import { usePanelTabs } from './usePanelTabs';
+import type { CommonPanelProps, PageActionTelemetryData } from '@microsoft/designer-ui';
+import { isCustomCode, PanelContainer, PanelScope, PanelSize } from '@microsoft/designer-ui';
+import {
+  isNullOrUndefined,
+  replaceWhiteSpaceWithUnderscore,
+  splitFileName,
+  SUBGRAPH_TYPES,
+  WorkflowService,
+} from '@microsoft/logic-apps-shared';
+import type React from 'react';
+import type { ReactElement } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
 export const NodeDetailsPanel = (props: CommonPanelProps): JSX.Element => {
   const { panelLocation } = props;
@@ -42,9 +42,6 @@ export const NodeDetailsPanel = (props: CommonPanelProps): JSX.Element => {
   const dispatch = useDispatch<AppDispatch>();
 
   const readOnly = useReadOnly();
-
-  const panelTabs = usePanelTabs();
-  const selectedTab = useSelectedPanelTabId();
   const collapsed = useIsPanelCollapsed();
 
   const pinnedNode = usePinnedNodeId();
@@ -191,11 +188,6 @@ export const NodeDetailsPanel = (props: CommonPanelProps): JSX.Element => {
       suppressDefaultNodeSelectFunctionality={suppressDefaultNodeSelectFunctionality}
       headerMenuItems={headerMenuItems}
       showCommentBox={showCommentBox}
-      tabs={panelTabs}
-      selectedTab={selectedTab}
-      selectTab={(tabId: string) => {
-        dispatch(selectPanelTab(tabId));
-      }}
       node={selectedNodeData}
       pinnedNode={pinnedNodeData}
       readOnlyMode={readOnly}

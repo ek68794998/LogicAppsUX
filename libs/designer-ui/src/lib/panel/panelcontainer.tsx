@@ -24,7 +24,10 @@ export interface PanelContainerNodeData {
   isError: boolean;
   isLoading: boolean;
   nodeId: string;
+  onSelectTab: (tabId: string) => void;
   runData: LogicAppsV2.WorkflowRunAction | LogicAppsV2.WorkflowRunTrigger | undefined;
+  selectedTab?: string;
+  tabs: PanelTab[];
 }
 
 export type PanelContainerProps = {
@@ -33,11 +36,8 @@ export type PanelContainerProps = {
   suppressDefaultNodeSelectFunctionality?: boolean;
   pivotDisabled?: boolean;
   headerMenuItems: JSX.Element[];
-  selectedTab?: string;
-  selectTab: (tabId: string) => void;
   showCommentBox: boolean;
   readOnlyMode?: boolean;
-  tabs: PanelTab[];
   node: PanelContainerNodeData | undefined;
   pinnedNode: PanelContainerNodeData | undefined;
   layerProps?: ILayerProps;
@@ -59,13 +59,10 @@ export const PanelContainer = ({
   panelScope,
   suppressDefaultNodeSelectFunctionality,
   headerMenuItems,
-  selectedTab,
-  selectTab,
   canResubmit,
   resubmitOperation,
   showCommentBox,
   readOnlyMode,
-  tabs,
   node,
   pinnedNode,
   width,
@@ -153,7 +150,7 @@ export const PanelContainer = ({
 
   const renderPanelContents = useCallback(
     (contentsNode: NonNullable<typeof node>, position: 'left' | 'right'): JSX.Element => {
-      const { errorMessage, isError, isLoading, nodeId } = contentsNode;
+      const { errorMessage, isError, isLoading, nodeId, onSelectTab, selectedTab, tabs } = contentsNode;
       return (
         <div className={mergeClasses('msla-panel-contents', `msla-panel-contents-${position}`)}>
           {(renderHeader ?? defaultRenderHeader)(contentsNode)}
@@ -164,12 +161,12 @@ export const PanelContainer = ({
           ) : isError ? (
             <MessageBar messageBarType={MessageBarType.error}>{errorMessage ?? panelErrorMessage}</MessageBar>
           ) : (
-            <PanelContent tabs={tabs} trackEvent={trackEvent} nodeId={nodeId} selectedTab={selectedTab} selectTab={selectTab} />
+            <PanelContent tabs={tabs} trackEvent={trackEvent} nodeId={nodeId} selectedTab={selectedTab} selectTab={onSelectTab} />
           )}
         </div>
       );
     },
-    [defaultRenderHeader, panelErrorMessage, renderHeader, selectTab, selectedTab, tabs, trackEvent]
+    [defaultRenderHeader, panelErrorMessage, renderHeader, trackEvent]
   );
 
   const isEmptyPane = noNodeSelected && panelScope === PanelScope.CardLevel;

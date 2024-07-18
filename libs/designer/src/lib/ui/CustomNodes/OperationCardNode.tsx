@@ -20,7 +20,8 @@ import {
   useTokenDependencies,
   useOperationVisuals,
 } from '../../core/state/operation/operationSelector';
-import { useIsNodeSelected, usePinnedNodeId } from '../../core/state/panel/panelSelectors';
+import { useIsNodeSelected } from '../../core/state/panel/panelSelectors';
+import { usePinnedNodeId } from '../../core/state/panel/panelV2Selectors';
 import { changePanelNode, selectPanelTab, setPinnedNodeId, setSelectedNodeId } from '../../core/state/panel/panelSlice';
 import {
   useAllOperations,
