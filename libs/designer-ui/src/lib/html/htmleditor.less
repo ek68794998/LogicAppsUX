@@ -7,6 +7,7 @@ div.msla-html-editor-toolbar {
   border-top-right-radius: 10px;
   overflow: auto;
   align-items: center;
+  min-width: 230px;
 
   .msla-html-editor-toolbar-group {
     display: flex;
@@ -51,10 +52,6 @@ div.msla-html-editor-toolbar {
       width: 80px;
     }
 
-    &:disabled {
-      cursor: not-allowed;
-    }
-
     & img.format, &.color-picker img {
       background-size: contain;
       height: 18px;
@@ -64,16 +61,20 @@ div.msla-html-editor-toolbar {
       opacity: 0.6;
     }
 
-    &:disabled img {
-      opacity: 0.2;
+    &:disabled {
+      cursor: not-allowed;
+
+      img {
+        opacity: 0.2;
+      }
     }
 
     &.active {
       background-color: rgba(223, 232, 250, 0.3);
-    }
 
-    &.active img {
-      opacity: 1;
+      img {
+        opacity: 1;
+      }
     }
 
     &:hover:not([disabled]) {
@@ -106,20 +107,20 @@ div.msla-html-editor-toolbar {
     height: 16px;
     display: flex;
     user-select: none;
+
+    &.inside {
+      width: 16px;
+      height: 16px;
+      display: flex;
+      margin-left: -25px;
+      margin-top: 11px;
+      margin-right: 10px;
+      pointer-events: none;
+    }
   }
-  img.chevron-down.inside {
-    width: 16px;
-    height: 16px;
-    display: flex;
-    margin-left: -25px;
-    margin-top: 11px;
-    margin-right: 10px;
-    pointer-events: none;
-  }
-  .divider {
-    width: 1px;
-    background-color: #eee;
-    margin: 0 4px;
+
+  .msla-toolbar-divider {
+    padding: 4px 6px;
   }
 }
 
@@ -206,9 +207,6 @@ img.chevron-down {
   }
 }
 
-div.msla-toolbar-divider {
-  padding: 4px 6px;
-}
 .msla-colorpicker-input-wrapper {
   display: flex;
   flex-direction: row;

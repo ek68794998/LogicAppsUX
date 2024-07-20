@@ -8,7 +8,9 @@ import { Format } from './Format';
 import { FontDropDown, FontDropDownType } from './helper/FontDropDown';
 import { convertEditorState } from './helper/HTMLChangePlugin';
 import { useCloseDropdownOnScroll } from './hooks/useCloseDropdownOnScroll';
-import { Toolbar, ToolbarDivider, ToolbarGroup } from '@fluentui/react-components';
+import { RichTextToolbarItem } from './RichTextToolbarItem';
+import type { GroupName } from './constants';
+import { Overflow, Toolbar, ToolbarDivider, ToolbarGroup, useIsOverflowGroupVisible } from '@fluentui/react-components';
 import { TOGGLE_LINK_COMMAND } from '@lexical/link';
 import { $isListNode, ListNode } from '@lexical/list';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
@@ -29,6 +31,7 @@ import {
   COMMAND_PRIORITY_NORMAL,
   SELECTION_CHANGE_COMMAND,
 } from 'lexical';
+import type { PropsWithChildren } from 'react';
 import { useCallback, useEffect, useState } from 'react';
 
 export const blockTypeToBlockName = {
@@ -47,13 +50,6 @@ export const blockTypeToBlockName = {
 } as const;
 export type blockTypeToBlockName = (typeof blockTypeToBlockName)[keyof typeof blockTypeToBlockName];
 
-const groupNames = {
-  undoRedo: 'undoRedo',
-  fontAppearance: 'fontAppearance',
-  textStyle: 'textStyle',
-  toggleView: 'toggleView',
-};
-
 interface ToolbarProps {
   isRawText?: boolean;
   isSwitchFromPlaintextBlocked?: boolean;
@@ -61,8 +57,21 @@ interface ToolbarProps {
   setIsRawText?: (newValue: boolean) => void;
 }
 
-const RichTextToolbarDivider: React.FC<{ groupId: keyof typeof groupNames }> = (props) => (
-  <ToolbarDivider data-group={props.groupId} className="msla-toolbar-divider" />
+const RichTextToolbarDivider: React.FC<{ groupId: GroupName }> = (props) => {
+  const { groupId } = props;
+  const groupVisibilityState = useIsOverflowGroupVisible(groupId);
+
+  if (groupVisibilityState === 'hidden') {
+    return null;
+  }
+
+  return <ToolbarDivider className="msla-toolbar-divider" />;
+};
+
+const RichTextToolbarGroup: React.FC<PropsWithChildren> = ({ children }) => (
+  <ToolbarGroup className="msla-html-editor-toolbar-group" role="presentation">
+    {children}
+  </ToolbarGroup>
 );
 
 export const RichTextToolbar: React.FC<ToolbarProps> = ({ isRawText, isSwitchFromPlaintextBlocked, readonly = false, setIsRawText }) => {
@@ -163,50 +172,69 @@ export const RichTextToolbar: React.FC<ToolbarProps> = ({ isRawText, isSwitchFro
   const formattingButtonsDisabled = readonly || !!isRawText;
 
   return (
-    <Toolbar className="msla-html-editor-toolbar">
-      <ToolbarGroup className="msla-html-editor-toolbar-group" role="presentation">
-        <UndoButton activeEditor={activeEditor} disabled={!canUndo || readonly} />
-        <RedoButton activeEditor={activeEditor} disabled={!canRedo || readonly} />
-        <RichTextToolbarDivider groupId={'undoRedo'} />
-        <BlockFormatDropDown disabled={formattingButtonsDisabled} blockType={blockType} editor={editor} />
-        <FontDropDown
-          fontDropdownType={FontDropDownType.FONTFAMILY}
-          value={fontFamily}
-          editor={editor}
-          disabled={formattingButtonsDisabled}
-        />
-        <FontDropDown fontDropdownType={FontDropDownType.FONTSIZE} value={fontSize} editor={editor} disabled={formattingButtonsDisabled} />
-        <RichTextToolbarDivider groupId={'fontAppearance'} />
-        <Format activeEditor={activeEditor} readonly={formattingButtonsDisabled} />
-      </ToolbarGroup>
-      {setIsRawText ? (
-        <ToolbarGroup className="msla-html-editor-toolbar-group" role="presentation">
-          <HtmlViewToggleButton
-            disabled={(readonly || (isRawText && isSwitchFromPlaintextBlocked)) ?? false}
-            isPressed={!!isRawText}
-            onToggle={() => {
-              const nodeMap = new Map<string, ValueSegment>();
-              activeEditor.getEditorState().read(() => {
-                getChildrenNodes($getRoot(), nodeMap);
-              });
-              convertEditorState(activeEditor, nodeMap, { isValuePlaintext: !!isRawText }).then((valueSegments) => {
-                activeEditor.update(() => {
-                  $getRoot().clear().select();
-                  if (isRawText) {
-                    parseHtmlSegments(valueSegments, { tokensEnabled: true, readonly });
-                    setIsRawText(false);
-                  } else {
-                    parseSegments(valueSegments, { tokensEnabled: true, readonly });
-                    setIsRawText(true);
-                  }
-                });
-              });
-            }}
-          />
-        </ToolbarGroup>
-      ) : null}
-      <ListPlugin />
-      <LinkPlugin />
-    </Toolbar>
+    <Overflow padding={48}>
+      <Toolbar className="msla-html-editor-toolbar">
+        <RichTextToolbarGroup>
+          <RichTextToolbarItem groupId="undoRedo" id="undo">
+            <UndoButton activeEditor={activeEditor} disabled={!canUndo || readonly} />
+          </RichTextToolbarItem>
+          <RichTextToolbarItem groupId="undoRedo" id="redo">
+            <RedoButton activeEditor={activeEditor} disabled={!canRedo || readonly} />
+          </RichTextToolbarItem>
+          <RichTextToolbarDivider groupId="undoRedo" />
+          <RichTextToolbarItem groupId="fontAppearance" id="fontStyle">
+            <BlockFormatDropDown disabled={formattingButtonsDisabled} blockType={blockType} editor={editor} />
+          </RichTextToolbarItem>
+          <RichTextToolbarItem groupId="fontAppearance" id="fontFamily">
+            <FontDropDown
+              fontDropdownType={FontDropDownType.FONTFAMILY}
+              value={fontFamily}
+              editor={editor}
+              disabled={formattingButtonsDisabled}
+            />
+          </RichTextToolbarItem>
+          <RichTextToolbarItem groupId="fontAppearance" id="fontSize">
+            <FontDropDown
+              fontDropdownType={FontDropDownType.FONTSIZE}
+              value={fontSize}
+              editor={editor}
+              disabled={formattingButtonsDisabled}
+            />
+          </RichTextToolbarItem>
+          <RichTextToolbarDivider groupId="fontAppearance" />
+          <Format activeEditor={activeEditor} overflowProps={{ groupId: 'textStyle' }} readonly={formattingButtonsDisabled} />
+        </RichTextToolbarGroup>
+        {setIsRawText ? (
+          <RichTextToolbarGroup>
+            <RichTextToolbarItem groupId="toggleView" id="toggleView">
+              <HtmlViewToggleButton
+                disabled={(readonly || (isRawText && isSwitchFromPlaintextBlocked)) ?? false}
+                isPressed={!!isRawText}
+                onToggle={() => {
+                  const nodeMap = new Map<string, ValueSegment>();
+                  activeEditor.getEditorState().read(() => {
+                    getChildrenNodes($getRoot(), nodeMap);
+                  });
+                  convertEditorState(activeEditor, nodeMap, { isValuePlaintext: !!isRawText }).then((valueSegments) => {
+                    activeEditor.update(() => {
+                      $getRoot().clear().select();
+                      if (isRawText) {
+                        parseHtmlSegments(valueSegments, { tokensEnabled: true, readonly });
+                        setIsRawText(false);
+                      } else {
+                        parseSegments(valueSegments, { tokensEnabled: true, readonly });
+                        setIsRawText(true);
+                      }
+                    });
+                  });
+                }}
+              />
+            </RichTextToolbarItem>
+          </RichTextToolbarGroup>
+        ) : null}
+        <ListPlugin />
+        <LinkPlugin />
+      </Toolbar>
+    </Overflow>
   );
 };

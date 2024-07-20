@@ -13,8 +13,10 @@ import italicLight from '../icons/light/type-italic.svg';
 import underlineLight from '../icons/light/type-underline.svg';
 import { DropdownColorPicker } from './DropdownColorPicker';
 import { getSelectedNode, sanitizeUrl } from './helper/functions';
+import { RichTextToolbarItem } from './RichTextToolbarItem';
+import type { ButtonName, GroupName } from './constants';
 import { useTheme } from '@fluentui/react';
-import { ToolbarButton } from '@fluentui/react-components';
+import { mergeClasses, ToolbarButton } from '@fluentui/react-components';
 import { $isLinkNode, TOGGLE_LINK_COMMAND } from '@lexical/link';
 import { $getSelectionStyleValueForProperty, $patchStyleText } from '@lexical/selection';
 import { mergeRegister } from '@lexical/utils';
@@ -32,12 +34,17 @@ import {
 import { useCallback, useEffect, useState } from 'react';
 import { useIntl } from 'react-intl';
 
+interface FormatOverflowProps {
+  groupId: GroupName;
+}
+
 interface FormatProps {
   activeEditor: LexicalEditor;
+  overflowProps?: FormatOverflowProps;
   readonly: boolean;
 }
 
-export const Format = ({ activeEditor, readonly }: FormatProps) => {
+export const Format: React.FC<FormatProps> = ({ activeEditor, overflowProps, readonly }) => {
   const { isInverted } = useTheme();
   const [isBold, setIsBold] = useState(false);
   const [isItalic, setIsItalic] = useState(false);
@@ -148,6 +155,21 @@ export const Format = ({ activeEditor, readonly }: FormatProps) => {
     }
   }, [activeEditor, isLink]);
 
+  const getRichTextToolbarItem = useCallback(
+    (buttonId: ButtonName, node: React.ReactNode) => {
+      if (!overflowProps) {
+        return node;
+      }
+
+      return (
+        <RichTextToolbarItem groupId={overflowProps.groupId} id={buttonId}>
+          {node}
+        </RichTextToolbarItem>
+      );
+    },
+    [overflowProps]
+  );
+
   const boldTitleMac = intl.formatMessage({
     defaultMessage: 'Bold (⌘B)',
     id: 'ciLkfU',
@@ -228,68 +250,86 @@ export const Format = ({ activeEditor, readonly }: FormatProps) => {
 
   return (
     <>
-      <ToolbarButton
-        onMouseDown={(e) => e.preventDefault()}
-        onClick={() => {
-          activeEditor.dispatchCommand(FORMAT_TEXT_COMMAND, 'bold');
-        }}
-        className={`toolbar-item spaced ${isBold ? 'active' : ''}`}
-        title={isApple() ? boldTitleMac : boldTitleNonMac}
-        aria-label={isApple() ? boldTitleMacAriaLabel : boldTitleNonMacAriaLabel}
-        disabled={readonly}
-        icon={<img className={'format'} src={isInverted ? boldDark : boldLight} alt={'bold icon'} />}
-      />
-      <ToolbarButton
-        onMouseDown={(e) => e.preventDefault()}
-        onClick={() => {
-          activeEditor.dispatchCommand(FORMAT_TEXT_COMMAND, 'italic');
-        }}
-        className={`toolbar-item spaced ${isItalic ? 'active' : ''}`}
-        title={isApple() ? italicTitleMac : italicTitleNonMac}
-        aria-label={isApple() ? italicTitleMacAriaLabel : italicTitleNonMacAriaLabel}
-        disabled={readonly}
-        icon={<img className={'format'} src={isInverted ? italicDark : italicLight} alt={'italic icon'} />}
-      />
-      <ToolbarButton
-        onMouseDown={(e) => e.preventDefault()}
-        onClick={() => {
-          activeEditor.dispatchCommand(FORMAT_TEXT_COMMAND, 'underline');
-        }}
-        className={`toolbar-item spaced ${isUnderline ? 'active' : ''}`}
-        title={isApple() ? underlineTitleMac : underlineTitleNonMac}
-        aria-label={isApple() ? underlineTitleMacAriaLabel : underlineTitleNonMacAriaLabel}
-        disabled={readonly}
-        icon={<img className={'format'} src={isInverted ? underlineDark : underlineLight} alt={'underline icon'} />}
-      />
-      <DropdownColorPicker
-        editor={activeEditor}
-        disabled={readonly}
-        buttonClassName="toolbar-item color-picker"
-        buttonAriaLabel="Formatting text color"
-        buttonIconSrc={isInverted ? fontColorSvgDark : fontColorSvgLight}
-        color={fontColor}
-        onChange={onFontColorSelect}
-        title={textColorTitle}
-      />
-      <DropdownColorPicker
-        editor={activeEditor}
-        disabled={readonly}
-        buttonClassName="toolbar-item color-picker"
-        buttonAriaLabel="Formatting background color"
-        buttonIconSrc={isInverted ? paintBucketSvgDark : paintBucketSvgLight}
-        color={bgColor}
-        onChange={onBgColorSelect}
-        title={backgroundColorTitle}
-      />
-      <ToolbarButton
-        onMouseDown={(e) => e.preventDefault()}
-        disabled={readonly}
-        onClick={insertLink}
-        className={`toolbar-item spaced ${isLink ? 'active' : ''}`}
-        aria-label={insertLinkLabel}
-        title={insertLinkLabel}
-        icon={<img className={'format'} src={isInverted ? linkDark : linkLight} alt={'link icon'} />}
-      />
+      {getRichTextToolbarItem(
+        'formatBold',
+        <ToolbarButton
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={() => {
+            activeEditor.dispatchCommand(FORMAT_TEXT_COMMAND, 'bold');
+          }}
+          className={mergeClasses('toolbar-item', 'spaced', isBold && 'active')}
+          title={isApple() ? boldTitleMac : boldTitleNonMac}
+          aria-label={isApple() ? boldTitleMacAriaLabel : boldTitleNonMacAriaLabel}
+          disabled={readonly}
+          icon={<img className={'format'} src={isInverted ? boldDark : boldLight} alt={'bold icon'} />}
+        />
+      )}
+      {getRichTextToolbarItem(
+        'formatItalic',
+        <ToolbarButton
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={() => {
+            activeEditor.dispatchCommand(FORMAT_TEXT_COMMAND, 'italic');
+          }}
+          className={mergeClasses('toolbar-item', 'spaced', isItalic && 'active')}
+          title={isApple() ? italicTitleMac : italicTitleNonMac}
+          aria-label={isApple() ? italicTitleMacAriaLabel : italicTitleNonMacAriaLabel}
+          disabled={readonly}
+          icon={<img className={'format'} src={isInverted ? italicDark : italicLight} alt={'italic icon'} />}
+        />
+      )}
+      {getRichTextToolbarItem(
+        'formatUnderline',
+        <ToolbarButton
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={() => {
+            activeEditor.dispatchCommand(FORMAT_TEXT_COMMAND, 'underline');
+          }}
+          className={mergeClasses('toolbar-item', 'spaced', isUnderline && 'active')}
+          title={isApple() ? underlineTitleMac : underlineTitleNonMac}
+          aria-label={isApple() ? underlineTitleMacAriaLabel : underlineTitleNonMacAriaLabel}
+          disabled={readonly}
+          icon={<img className={'format'} src={isInverted ? underlineDark : underlineLight} alt={'underline icon'} />}
+        />
+      )}
+      {getRichTextToolbarItem(
+        'formatFgColor',
+        <DropdownColorPicker
+          editor={activeEditor}
+          disabled={readonly}
+          buttonClassName={mergeClasses('toolbar-item', 'color-picker')}
+          buttonAriaLabel="Formatting text color"
+          buttonIconSrc={isInverted ? fontColorSvgDark : fontColorSvgLight}
+          color={fontColor}
+          onChange={onFontColorSelect}
+          title={textColorTitle}
+        />
+      )}
+      {getRichTextToolbarItem(
+        'formatBgColor',
+        <DropdownColorPicker
+          editor={activeEditor}
+          disabled={readonly}
+          buttonClassName={mergeClasses('toolbar-item', 'color-picker')}
+          buttonAriaLabel="Formatting background color"
+          buttonIconSrc={isInverted ? paintBucketSvgDark : paintBucketSvgLight}
+          color={bgColor}
+          onChange={onBgColorSelect}
+          title={backgroundColorTitle}
+        />
+      )}
+      {getRichTextToolbarItem(
+        'formatLink',
+        <ToolbarButton
+          onMouseDown={(e) => e.preventDefault()}
+          disabled={readonly}
+          onClick={insertLink}
+          className={mergeClasses('toolbar-item', 'spaced', isLink && 'active')}
+          aria-label={insertLinkLabel}
+          title={insertLinkLabel}
+          icon={<img className={'format'} src={isInverted ? linkDark : linkLight} alt={'link icon'} />}
+        />
+      )}
     </>
   );
 };
