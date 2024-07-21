@@ -1,6 +1,6 @@
 import { OverflowItem } from '@fluentui/react-components';
 import type { PropsWithChildren } from 'react';
-import type { ButtonName } from './constants';
+import type { ButtonName } from './types';
 import { toolbarButtons } from './constants';
 
 export const RichTextToolbarItem: React.FC<PropsWithChildren<{ id: ButtonName }>> = ({ children, id }) => (

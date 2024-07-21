@@ -39,13 +39,14 @@ import { parseHtmlSegments, parseSegments } from '../../../editor/base/utils/par
 import { HtmlViewToggleButton } from './buttons/HtmlViewToggleButton';
 import { RedoButton } from './buttons/RedoButton';
 import { UndoButton } from './buttons/UndoButton';
-import { toolbarButtons, type GroupName } from './constants';
+import { toolbarButtons } from './constants';
 import { BlockFormatDropDown } from './DropdownBlockFormat';
 import { Format } from './Format';
 import { FontDropDown, FontDropDownType } from './helper/FontDropDown';
 import { convertEditorState } from './helper/HTMLChangePlugin';
 import { useCloseDropdownOnScroll } from './hooks/useCloseDropdownOnScroll';
 import { RichTextToolbarItem } from './RichTextToolbarItem';
+import type { GroupName } from './types';
 
 export const blockTypeToBlockName = {
   bullet: 'Bullet List',

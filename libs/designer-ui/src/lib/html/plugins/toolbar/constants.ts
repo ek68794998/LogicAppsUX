@@ -1,3 +1,5 @@
+import type { GroupName } from './types';
+
 interface ToolbarButton {
   group: GroupName;
   priority: number;
@@ -38,11 +40,11 @@ export const toolbarButtons: Record<string, ToolbarButton> = {
   },
   formatFgColor: {
     group: 'textStyle',
-    priority: 60,
+    priority: 75,
   },
   formatBgColor: {
     group: 'textStyle',
-    priority: 60,
+    priority: 75,
   },
   formatLink: {
     group: 'textStyle',
@@ -53,6 +55,3 @@ export const toolbarButtons: Record<string, ToolbarButton> = {
     priority: 100,
   },
 };
-
-export type ButtonName = keyof typeof toolbarButtons;
-export type GroupName = 'undoRedo' | 'fontAppearance' | 'textStyle' | 'toggleView';
