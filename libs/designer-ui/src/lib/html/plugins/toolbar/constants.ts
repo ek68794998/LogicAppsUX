@@ -1,24 +1,58 @@
-export const buttonPriorities = {
-  undo: 90,
-  redo: 90,
-  fontStyle: 70,
-  fontFamily: 70,
-  fontSize: 70,
-  formatBold: 80,
-  formatItalic: 80,
-  formatUnderline: 80,
-  formatFgColor: 60,
-  formatBgColor: 60,
-  formatLink: 50,
-  toggleView: 100,
+interface ToolbarButton {
+  group: GroupName;
+  priority: number;
+}
+
+export const toolbarButtons: Record<string, ToolbarButton> = {
+  undo: {
+    group: 'undoRedo',
+    priority: 90,
+  },
+  redo: {
+    group: 'undoRedo',
+    priority: 90,
+  },
+  fontStyle: {
+    group: 'fontAppearance',
+    priority: 70,
+  },
+  fontFamily: {
+    group: 'fontAppearance',
+    priority: 70,
+  },
+  fontSize: {
+    group: 'fontAppearance',
+    priority: 70,
+  },
+  formatBold: {
+    group: 'textStyle',
+    priority: 80,
+  },
+  formatItalic: {
+    group: 'textStyle',
+    priority: 80,
+  },
+  formatUnderline: {
+    group: 'textStyle',
+    priority: 80,
+  },
+  formatFgColor: {
+    group: 'textStyle',
+    priority: 60,
+  },
+  formatBgColor: {
+    group: 'textStyle',
+    priority: 60,
+  },
+  formatLink: {
+    group: 'textStyle',
+    priority: 50,
+  },
+  toggleView: {
+    group: 'toggleView',
+    priority: 100,
+  },
 };
 
-export const groupNames = {
-  undoRedo: 'undoRedo',
-  fontAppearance: 'fontAppearance',
-  textStyle: 'textStyle',
-  toggleView: 'toggleView',
-};
-
-export type ButtonName = keyof typeof buttonPriorities;
-export type GroupName = keyof typeof groupNames;
+export type ButtonName = keyof typeof toolbarButtons;
+export type GroupName = 'undoRedo' | 'fontAppearance' | 'textStyle' | 'toggleView';

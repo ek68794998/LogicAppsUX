@@ -14,7 +14,7 @@ import underlineLight from '../icons/light/type-underline.svg';
 import { DropdownColorPicker } from './DropdownColorPicker';
 import { getSelectedNode, sanitizeUrl } from './helper/functions';
 import { RichTextToolbarItem } from './RichTextToolbarItem';
-import type { ButtonName, GroupName } from './constants';
+import type { ButtonName } from './constants';
 import { useTheme } from '@fluentui/react';
 import { mergeClasses, ToolbarButton } from '@fluentui/react-components';
 import { $isLinkNode, TOGGLE_LINK_COMMAND } from '@lexical/link';
@@ -34,17 +34,13 @@ import {
 import { useCallback, useEffect, useState } from 'react';
 import { useIntl } from 'react-intl';
 
-interface FormatOverflowProps {
-  groupId: GroupName;
-}
-
 interface FormatProps {
   activeEditor: LexicalEditor;
-  overflowProps?: FormatOverflowProps;
+  isOverflowEnabled?: boolean;
   readonly: boolean;
 }
 
-export const Format: React.FC<FormatProps> = ({ activeEditor, overflowProps, readonly }) => {
+export const Format: React.FC<FormatProps> = ({ activeEditor, isOverflowEnabled, readonly }) => {
   const { isInverted } = useTheme();
   const [isBold, setIsBold] = useState(false);
   const [isItalic, setIsItalic] = useState(false);
@@ -157,17 +153,13 @@ export const Format: React.FC<FormatProps> = ({ activeEditor, overflowProps, rea
 
   const getRichTextToolbarItem = useCallback(
     (buttonId: ButtonName, node: React.ReactNode) => {
-      if (!overflowProps) {
+      if (!isOverflowEnabled) {
         return node;
       }
 
-      return (
-        <RichTextToolbarItem groupId={overflowProps.groupId} id={buttonId}>
-          {node}
-        </RichTextToolbarItem>
-      );
+      return <RichTextToolbarItem id={buttonId}>{node}</RichTextToolbarItem>;
     },
-    [overflowProps]
+    [isOverflowEnabled]
   );
 
   const boldTitleMac = intl.formatMessage({

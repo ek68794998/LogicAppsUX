@@ -1,9 +1,10 @@
 import { OverflowItem } from '@fluentui/react-components';
 import type { PropsWithChildren } from 'react';
-import { buttonPriorities, type ButtonName, type GroupName } from './constants';
+import type { ButtonName } from './constants';
+import { toolbarButtons } from './constants';
 
-export const RichTextToolbarItem: React.FC<PropsWithChildren<{ groupId: GroupName; id: ButtonName }>> = ({ children, groupId, id }) => (
-  <OverflowItem groupId={groupId} id={id} priority={buttonPriorities[id]}>
+export const RichTextToolbarItem: React.FC<PropsWithChildren<{ id: ButtonName }>> = ({ children, id }) => (
+  <OverflowItem groupId={toolbarButtons[id].group} id={id} priority={toolbarButtons[id].priority}>
     <div>{children}</div>
   </OverflowItem>
 );

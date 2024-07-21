@@ -1,16 +1,17 @@
-import { getChildrenNodes } from '../../../editor/base/utils/helper';
-import { parseHtmlSegments, parseSegments } from '../../../editor/base/utils/parsesegments';
-import { HtmlViewToggleButton } from './buttons/HtmlViewToggleButton';
-import { RedoButton } from './buttons/RedoButton';
-import { UndoButton } from './buttons/UndoButton';
-import { BlockFormatDropDown } from './DropdownBlockFormat';
-import { Format } from './Format';
-import { FontDropDown, FontDropDownType } from './helper/FontDropDown';
-import { convertEditorState } from './helper/HTMLChangePlugin';
-import { useCloseDropdownOnScroll } from './hooks/useCloseDropdownOnScroll';
-import { RichTextToolbarItem } from './RichTextToolbarItem';
-import type { GroupName } from './constants';
-import { Overflow, Toolbar, ToolbarDivider, ToolbarGroup, useIsOverflowGroupVisible } from '@fluentui/react-components';
+import {
+  Button,
+  Menu,
+  MenuList,
+  MenuPopover,
+  MenuTrigger,
+  Overflow,
+  Toolbar,
+  ToolbarDivider,
+  ToolbarGroup,
+  useIsOverflowGroupVisible,
+  useOverflowMenu,
+} from '@fluentui/react-components';
+import { MoreHorizontal20Filled } from '@fluentui/react-icons';
 import { TOGGLE_LINK_COMMAND } from '@lexical/link';
 import { $isListNode, ListNode } from '@lexical/list';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
@@ -33,6 +34,18 @@ import {
 } from 'lexical';
 import type { PropsWithChildren } from 'react';
 import { useCallback, useEffect, useState } from 'react';
+import { getChildrenNodes } from '../../../editor/base/utils/helper';
+import { parseHtmlSegments, parseSegments } from '../../../editor/base/utils/parsesegments';
+import { HtmlViewToggleButton } from './buttons/HtmlViewToggleButton';
+import { RedoButton } from './buttons/RedoButton';
+import { UndoButton } from './buttons/UndoButton';
+import { toolbarButtons, type GroupName } from './constants';
+import { BlockFormatDropDown } from './DropdownBlockFormat';
+import { Format } from './Format';
+import { FontDropDown, FontDropDownType } from './helper/FontDropDown';
+import { convertEditorState } from './helper/HTMLChangePlugin';
+import { useCloseDropdownOnScroll } from './hooks/useCloseDropdownOnScroll';
+import { RichTextToolbarItem } from './RichTextToolbarItem';
 
 export const blockTypeToBlockName = {
   bullet: 'Bullet List',
@@ -73,6 +86,36 @@ const RichTextToolbarGroup: React.FC<PropsWithChildren> = ({ children }) => (
     {children}
   </ToolbarGroup>
 );
+
+const RichTextToolbarOverflowMenu: React.FC = () => {
+  const { isOverflowing, ref } = useOverflowMenu<HTMLButtonElement>();
+
+  if (!isOverflowing) {
+    return null;
+  }
+
+  const itemIds = Object.keys(toolbarButtons);
+
+  return (
+    <Menu>
+      <MenuTrigger disableButtonEnhancement>
+        <Button ref={ref} icon={<MoreHorizontal20Filled />} aria-label="More items" appearance="subtle" />
+      </MenuTrigger>
+      <MenuPopover>
+        <MenuList>
+          {itemIds.map((itemId, i) => {
+            const isLast = i === itemIds.length - 1;
+            return (
+              <>
+                {itemId} {isLast}
+              </>
+            );
+          })}
+        </MenuList>
+      </MenuPopover>
+    </Menu>
+  );
+};
 
 export const RichTextToolbar: React.FC<ToolbarProps> = ({ isRawText, isSwitchFromPlaintextBlocked, readonly = false, setIsRawText }) => {
   const [editor] = useLexicalComposerContext();
@@ -175,17 +218,17 @@ export const RichTextToolbar: React.FC<ToolbarProps> = ({ isRawText, isSwitchFro
     <Overflow padding={48}>
       <Toolbar className="msla-html-editor-toolbar">
         <RichTextToolbarGroup>
-          <RichTextToolbarItem groupId="undoRedo" id="undo">
+          <RichTextToolbarItem id="undo">
             <UndoButton activeEditor={activeEditor} disabled={!canUndo || readonly} />
           </RichTextToolbarItem>
-          <RichTextToolbarItem groupId="undoRedo" id="redo">
+          <RichTextToolbarItem id="redo">
             <RedoButton activeEditor={activeEditor} disabled={!canRedo || readonly} />
           </RichTextToolbarItem>
           <RichTextToolbarDivider groupId="undoRedo" />
-          <RichTextToolbarItem groupId="fontAppearance" id="fontStyle">
+          <RichTextToolbarItem id="fontStyle">
             <BlockFormatDropDown disabled={formattingButtonsDisabled} blockType={blockType} editor={editor} />
           </RichTextToolbarItem>
-          <RichTextToolbarItem groupId="fontAppearance" id="fontFamily">
+          <RichTextToolbarItem id="fontFamily">
             <FontDropDown
               fontDropdownType={FontDropDownType.FONTFAMILY}
               value={fontFamily}
@@ -193,7 +236,7 @@ export const RichTextToolbar: React.FC<ToolbarProps> = ({ isRawText, isSwitchFro
               disabled={formattingButtonsDisabled}
             />
           </RichTextToolbarItem>
-          <RichTextToolbarItem groupId="fontAppearance" id="fontSize">
+          <RichTextToolbarItem id="fontSize">
             <FontDropDown
               fontDropdownType={FontDropDownType.FONTSIZE}
               value={fontSize}
@@ -202,11 +245,12 @@ export const RichTextToolbar: React.FC<ToolbarProps> = ({ isRawText, isSwitchFro
             />
           </RichTextToolbarItem>
           <RichTextToolbarDivider groupId="fontAppearance" />
-          <Format activeEditor={activeEditor} overflowProps={{ groupId: 'textStyle' }} readonly={formattingButtonsDisabled} />
+          <Format activeEditor={activeEditor} isOverflowEnabled={true} readonly={formattingButtonsDisabled} />
+          <RichTextToolbarOverflowMenu />
         </RichTextToolbarGroup>
         {setIsRawText ? (
           <RichTextToolbarGroup>
-            <RichTextToolbarItem groupId="toggleView" id="toggleView">
+            <RichTextToolbarItem id="toggleView">
               <HtmlViewToggleButton
                 disabled={(readonly || (isRawText && isSwitchFromPlaintextBlocked)) ?? false}
                 isPressed={!!isRawText}
