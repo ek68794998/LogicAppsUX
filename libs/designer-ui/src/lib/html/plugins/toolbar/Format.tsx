@@ -1,3 +1,16 @@
+import constants from '../../../constants';
+import fontColorSvgDark from '../icons/dark/font-color.svg';
+import paintBucketSvgDark from '../icons/dark/paint-bucket.svg';
+import fontColorSvgLight from '../icons/light/font-color.svg';
+import paintBucketSvgLight from '../icons/light/paint-bucket.svg';
+import { FormatBoldButton } from './buttons/FormatBoldButton';
+import { FormatItalicButton } from './buttons/FormatItalicButton';
+import { FormatLinkButton } from './buttons/FormatLinkButton';
+import { FormatUnderlineButton } from './buttons/FormatUnderlineButton';
+import { DropdownColorPicker } from './DropdownColorPicker';
+import { getSelectedNode, sanitizeUrl } from './helper/functions';
+import { RichTextToolbarItem } from './RichTextToolbarItem';
+import type { ButtonName } from './types';
 import { useTheme } from '@fluentui/react';
 import { mergeClasses } from '@fluentui/react-components';
 import { $isLinkNode, TOGGLE_LINK_COMMAND } from '@lexical/link';
@@ -14,19 +27,6 @@ import {
 } from 'lexical';
 import { useCallback, useEffect, useState } from 'react';
 import { useIntl } from 'react-intl';
-import constants from '../../../constants';
-import fontColorSvgDark from '../icons/dark/font-color.svg';
-import paintBucketSvgDark from '../icons/dark/paint-bucket.svg';
-import fontColorSvgLight from '../icons/light/font-color.svg';
-import paintBucketSvgLight from '../icons/light/paint-bucket.svg';
-import { FormatBoldButton } from './buttons/FormatBoldButton';
-import { FormatItalicButton } from './buttons/FormatItalicButton';
-import { FormatLinkButton } from './buttons/FormatLinkButton';
-import { FormatUnderlineButton } from './buttons/FormatUnderlineButton';
-import { DropdownColorPicker } from './DropdownColorPicker';
-import { getSelectedNode, sanitizeUrl } from './helper/functions';
-import { RichTextToolbarItem } from './RichTextToolbarItem';
-import type { ButtonName } from './types';
 
 interface FormatProps {
   activeEditor: LexicalEditor;
