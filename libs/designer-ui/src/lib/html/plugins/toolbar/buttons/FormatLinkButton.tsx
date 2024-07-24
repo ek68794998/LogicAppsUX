@@ -1,20 +1,14 @@
 import { TOGGLE_LINK_COMMAND } from '@lexical/link';
-import type { LexicalEditor } from 'lexical';
 import { useCallback } from 'react';
 import { useIntl } from 'react-intl';
 import linkDark from '../../icons/dark/link.svg';
 import linkLight from '../../icons/light/link.svg';
 import { sanitizeUrl } from '../helper/functions';
 import { FormatButton } from './FormatButton';
+import type { FormatButtonCommonProps } from './types';
 
-interface FormatLinkButtonProps {
-  activeEditor: LexicalEditor;
-  isToggledOn: boolean;
-  readonly: boolean;
-}
-
-export const FormatLinkButton: React.FC<FormatLinkButtonProps> = (props) => {
-  const { activeEditor, isToggledOn, readonly } = props;
+export const FormatLinkButton: React.FC<FormatButtonCommonProps> = (props) => {
+  const { activeEditor, as, isToggledOn, readonly } = props;
 
   const intl = useIntl();
 
@@ -34,6 +28,7 @@ export const FormatLinkButton: React.FC<FormatLinkButtonProps> = (props) => {
 
   return (
     <FormatButton
+      as={as}
       icons={{
         dark: linkDark,
         label: 'link',

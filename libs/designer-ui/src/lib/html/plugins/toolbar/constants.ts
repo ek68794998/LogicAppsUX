@@ -1,11 +1,11 @@
-import type { GroupName } from './types';
+import type { ButtonName, GroupName } from './types';
 
 interface ToolbarButton {
   group: GroupName;
   priority: number;
 }
 
-export const toolbarButtons: Record<string, ToolbarButton> = {
+export const toolbarButtons: Record<ButtonName, ToolbarButton> = {
   undo: {
     group: 'undoRedo',
     priority: 90,

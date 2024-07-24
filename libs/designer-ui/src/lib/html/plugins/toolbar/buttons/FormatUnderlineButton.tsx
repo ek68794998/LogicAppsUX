@@ -1,17 +1,12 @@
-import { FORMAT_TEXT_COMMAND, type LexicalEditor } from 'lexical';
+import { FORMAT_TEXT_COMMAND } from 'lexical';
 import { useIntl } from 'react-intl';
 import underlineDark from '../../icons/dark/type-underline.svg';
 import underlineLight from '../../icons/light/type-underline.svg';
 import { FormatButton } from './FormatButton';
+import type { FormatButtonCommonProps } from './types';
 
-interface FormatUnderlineButtonProps {
-  activeEditor: LexicalEditor;
-  isToggledOn: boolean;
-  readonly: boolean;
-}
-
-export const FormatUnderlineButton: React.FC<FormatUnderlineButtonProps> = (props) => {
-  const { activeEditor, isToggledOn, readonly } = props;
+export const FormatUnderlineButton: React.FC<FormatButtonCommonProps> = (props) => {
+  const { activeEditor, as, isToggledOn, readonly } = props;
 
   const intl = useIntl();
 
@@ -38,6 +33,7 @@ export const FormatUnderlineButton: React.FC<FormatUnderlineButtonProps> = (prop
 
   return (
     <FormatButton
+      as={as}
       icons={{
         dark: underlineDark,
         label: 'underline',

@@ -1,17 +1,12 @@
-import { FORMAT_TEXT_COMMAND, type LexicalEditor } from 'lexical';
+import { FORMAT_TEXT_COMMAND } from 'lexical';
 import { useIntl } from 'react-intl';
 import italicDark from '../../icons/dark/type-italic.svg';
 import italicLight from '../../icons/light/type-italic.svg';
 import { FormatButton } from './FormatButton';
+import type { FormatButtonCommonProps } from './types';
 
-interface FormatItalicButtonProps {
-  activeEditor: LexicalEditor;
-  isToggledOn: boolean;
-  readonly: boolean;
-}
-
-export const FormatItalicButton: React.FC<FormatItalicButtonProps> = (props) => {
-  const { activeEditor, isToggledOn, readonly } = props;
+export const FormatItalicButton: React.FC<FormatButtonCommonProps> = (props) => {
+  const { activeEditor, as, isToggledOn, readonly } = props;
 
   const intl = useIntl();
 
@@ -38,6 +33,7 @@ export const FormatItalicButton: React.FC<FormatItalicButtonProps> = (props) => 
 
   return (
     <FormatButton
+      as={as}
       icons={{
         dark: italicDark,
         label: 'italic',

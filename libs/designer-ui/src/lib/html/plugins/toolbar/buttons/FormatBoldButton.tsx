@@ -1,17 +1,12 @@
-import { FORMAT_TEXT_COMMAND, type LexicalEditor } from 'lexical';
+import { FORMAT_TEXT_COMMAND } from 'lexical';
 import { useIntl } from 'react-intl';
 import boldDark from '../../icons/dark/type-bold.svg';
 import boldLight from '../../icons/light/type-bold.svg';
 import { FormatButton } from './FormatButton';
+import type { FormatButtonCommonProps } from './types';
 
-interface FormatBoldButtonProps {
-  activeEditor: LexicalEditor;
-  isToggledOn: boolean;
-  readonly: boolean;
-}
-
-export const FormatBoldButton: React.FC<FormatBoldButtonProps> = (props) => {
-  const { activeEditor, isToggledOn, readonly } = props;
+export const FormatBoldButton: React.FC<FormatButtonCommonProps> = (props) => {
+  const { activeEditor, as, isToggledOn, readonly } = props;
 
   const intl = useIntl();
 
@@ -38,6 +33,7 @@ export const FormatBoldButton: React.FC<FormatBoldButtonProps> = (props) => {
 
   return (
     <FormatButton
+      as={as}
       icons={{
         dark: boldDark,
         label: 'bold',

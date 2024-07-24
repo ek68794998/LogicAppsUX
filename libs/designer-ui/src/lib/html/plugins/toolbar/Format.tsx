@@ -1,98 +1,24 @@
-import constants from '../../../constants';
-import fontColorSvgDark from '../icons/dark/font-color.svg';
-import paintBucketSvgDark from '../icons/dark/paint-bucket.svg';
-import fontColorSvgLight from '../icons/light/font-color.svg';
-import paintBucketSvgLight from '../icons/light/paint-bucket.svg';
 import { FormatBoldButton } from './buttons/FormatBoldButton';
 import { FormatItalicButton } from './buttons/FormatItalicButton';
 import { FormatLinkButton } from './buttons/FormatLinkButton';
 import { FormatUnderlineButton } from './buttons/FormatUnderlineButton';
-import { DropdownColorPicker } from './DropdownColorPicker';
-import { getSelectedNode, sanitizeUrl } from './helper/functions';
+import { sanitizeUrl } from './helper/functions';
 import { RichTextToolbarItem } from './RichTextToolbarItem';
-import type { ButtonName } from './types';
-import { useTheme } from '@fluentui/react';
-import { mergeClasses } from '@fluentui/react-components';
-import { $isLinkNode, TOGGLE_LINK_COMMAND } from '@lexical/link';
-import { $getSelectionStyleValueForProperty, $patchStyleText } from '@lexical/selection';
-import { mergeRegister } from '@lexical/utils';
+import { TOGGLE_LINK_COMMAND } from '@lexical/link';
 import type { LexicalEditor } from 'lexical';
-import {
-  $getSelection,
-  $isRangeSelection,
-  COMMAND_PRIORITY_CRITICAL,
-  COMMAND_PRIORITY_NORMAL,
-  KEY_MODIFIER_COMMAND,
-  SELECTION_CHANGE_COMMAND,
-} from 'lexical';
-import { useCallback, useEffect, useState } from 'react';
-import { useIntl } from 'react-intl';
+import { COMMAND_PRIORITY_NORMAL, KEY_MODIFIER_COMMAND } from 'lexical';
+import { useEffect } from 'react';
+import { useFormat } from './hooks/useFormat';
+import { FormatFgColorPicker } from './dropdowns/FormatFgColorPicker';
+import { FormatBgColorPicker } from './dropdowns/FormatBgColorPicker';
 
 interface FormatProps {
   activeEditor: LexicalEditor;
-  isOverflowEnabled?: boolean;
   readonly: boolean;
 }
 
-export const Format: React.FC<FormatProps> = ({ activeEditor, isOverflowEnabled, readonly }) => {
-  const { isInverted } = useTheme();
-  const [isBold, setIsBold] = useState(false);
-  const [isItalic, setIsItalic] = useState(false);
-  const [isUnderline, setIsUnderline] = useState(false);
-  const [fontColor, setFontColor] = useState<string>(isInverted ? constants.INVERTED_TEXT_COLOR : constants.STANDARD_TEXT_COLOR);
-  const [bgColor, setBgColor] = useState<string>(
-    isInverted ? constants.INVERTED_EDITOR_BACKGROUND_COLOR : constants.STANDARD_EDITOR_BACKGROUND_COLOR
-  );
-  const [isLink, setIsLink] = useState(false);
-  const intl = useIntl();
-
-  const updateFormat = useCallback(() => {
-    const selection = $getSelection();
-
-    if ($isRangeSelection(selection)) {
-      const node = getSelectedNode(selection);
-      const parent = node.getParent();
-      if ($isLinkNode(parent) || $isLinkNode(node)) {
-        setIsLink(true);
-      } else {
-        setIsLink(false);
-      }
-      setIsBold(selection.hasFormat('bold'));
-      setIsItalic(selection.hasFormat('italic'));
-      setIsUnderline(selection.hasFormat('underline'));
-      setFontColor(
-        $getSelectionStyleValueForProperty(selection, 'color', isInverted ? constants.INVERTED_TEXT_COLOR : constants.STANDARD_TEXT_COLOR)
-      );
-      setBgColor(
-        $getSelectionStyleValueForProperty(
-          selection,
-          'background-color',
-          isInverted ? constants.INVERTED_EDITOR_BACKGROUND_COLOR : constants.STANDARD_EDITOR_BACKGROUND_COLOR
-        )
-      );
-    }
-  }, [isInverted]);
-
-  useEffect(() => {
-    return mergeRegister(
-      activeEditor.registerUpdateListener(({ editorState }) => {
-        editorState.read(() => {
-          updateFormat();
-        });
-      })
-    );
-  }, [activeEditor, updateFormat]);
-
-  useEffect(() => {
-    return activeEditor.registerCommand(
-      SELECTION_CHANGE_COMMAND,
-      (_payload) => {
-        updateFormat();
-        return false;
-      },
-      COMMAND_PRIORITY_CRITICAL
-    );
-  }, [activeEditor, updateFormat]);
+export const Format: React.FC<FormatProps> = ({ activeEditor, readonly }) => {
+  const { bgColor, fontColor, isBold, isItalic, isLink, isUnderline } = useFormat(activeEditor);
 
   useEffect(() => {
     return activeEditor.registerCommand(
@@ -111,92 +37,26 @@ export const Format: React.FC<FormatProps> = ({ activeEditor, isOverflowEnabled,
     );
   }, [activeEditor, isLink]);
 
-  const applyStyleText = useCallback(
-    (styles: Record<string, string>) => {
-      activeEditor.update(() => {
-        const selection = $getSelection();
-        if ($isRangeSelection(selection)) {
-          $patchStyleText(selection, styles);
-        }
-      });
-    },
-    [activeEditor]
-  );
-
-  const onFontColorSelect = useCallback(
-    (value: string) => {
-      applyStyleText({ color: value });
-    },
-    [applyStyleText]
-  );
-
-  const onBgColorSelect = useCallback(
-    (value: string) => {
-      applyStyleText({ 'background-color': value });
-    },
-    [applyStyleText]
-  );
-
-  const getRichTextToolbarItem = useCallback(
-    (buttonId: ButtonName, node: React.ReactNode) => {
-      if (!isOverflowEnabled) {
-        return node;
-      }
-
-      return <RichTextToolbarItem id={buttonId}>{node}</RichTextToolbarItem>;
-    },
-    [isOverflowEnabled]
-  );
-
-  const backgroundColorTitle = intl.formatMessage({
-    defaultMessage: 'Background Color',
-    id: 'r7ZizR',
-    description: 'label to set background color',
-  });
-  const textColorTitle = intl.formatMessage({
-    defaultMessage: 'Text Color',
-    id: 'ZVB4NL',
-    description: 'label to set text color',
-  });
-
   return (
     <>
-      {getRichTextToolbarItem('formatBold', <FormatBoldButton activeEditor={activeEditor} isToggledOn={isBold} readonly={readonly} />)}
-      {getRichTextToolbarItem(
-        'formatItalic',
-        <FormatItalicButton activeEditor={activeEditor} isToggledOn={isItalic} readonly={readonly} />
-      )}
-      {getRichTextToolbarItem(
-        'formatUnderline',
-        <FormatUnderlineButton activeEditor={activeEditor} isToggledOn={isUnderline} readonly={readonly} />
-      )}
-      {getRichTextToolbarItem(
-        'formatFgColor',
-        <DropdownColorPicker
-          editor={activeEditor}
-          disabled={readonly}
-          buttonClassName={mergeClasses('toolbar-item', 'color-picker')}
-          buttonAriaLabel="Formatting text color"
-          buttonIconSrc={isInverted ? fontColorSvgDark : fontColorSvgLight}
-          color={fontColor}
-          onChange={onFontColorSelect}
-          title={textColorTitle}
-        />
-      )}
-      {getRichTextToolbarItem(
-        'formatBgColor',
-        <DropdownColorPicker
-          editor={activeEditor}
-          disabled={readonly}
-          buttonClassName={mergeClasses('toolbar-item', 'color-picker')}
-          buttonAriaLabel="Formatting background color"
-          buttonIconSrc={isInverted ? paintBucketSvgDark : paintBucketSvgLight}
-          color={bgColor}
-          onChange={onBgColorSelect}
-          title={backgroundColorTitle}
-        />
-      )}
-      {getRichTextToolbarItem('formatLink', <FormatLinkButton activeEditor={activeEditor} isToggledOn={isLink} readonly={readonly} />)}
+      <RichTextToolbarItem id="formatBold">
+        <FormatBoldButton activeEditor={activeEditor} as="toolbar-item" isToggledOn={isBold} readonly={readonly} />
+      </RichTextToolbarItem>
+      <RichTextToolbarItem id="formatItalic">
+        <FormatItalicButton activeEditor={activeEditor} as="toolbar-item" isToggledOn={isItalic} readonly={readonly} />
+      </RichTextToolbarItem>
+      <RichTextToolbarItem id="formatUnderline">
+        <FormatUnderlineButton activeEditor={activeEditor} as="toolbar-item" isToggledOn={isUnderline} readonly={readonly} />
+      </RichTextToolbarItem>
+      <RichTextToolbarItem id="formatFgColor">
+        <FormatFgColorPicker activeEditor={activeEditor} as="toolbar-item" colorValue={fontColor} readonly={readonly} />
+      </RichTextToolbarItem>
+      <RichTextToolbarItem id="formatBgColor">
+        <FormatBgColorPicker activeEditor={activeEditor} as="toolbar-item" colorValue={bgColor} readonly={readonly} />
+      </RichTextToolbarItem>
+      <RichTextToolbarItem id="formatLink">
+        <FormatLinkButton activeEditor={activeEditor} as="toolbar-item" isToggledOn={isLink} readonly={readonly} />
+      </RichTextToolbarItem>
     </>
   );
 };

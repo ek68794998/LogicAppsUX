@@ -3,9 +3,9 @@ import type { ListNode } from '@lexical/list';
 import { $isListNode, $createListNode } from '@lexical/list';
 import type { HeadingNode } from '@lexical/rich-text';
 import { $isHeadingNode, $createHeadingNode } from '@lexical/rich-text';
-import { $isAtNodeEnd } from '@lexical/selection';
-import { $createParagraphNode, $isParagraphNode } from 'lexical';
-import type { ElementNode, ParagraphNode, RangeSelection, TextNode, LexicalNode } from 'lexical';
+import { $isAtNodeEnd, $patchStyleText } from '@lexical/selection';
+import { $createParagraphNode, $getSelection, $isParagraphNode, $isRangeSelection } from 'lexical';
+import type { ElementNode, ParagraphNode, RangeSelection, TextNode, LexicalNode, LexicalEditor } from 'lexical';
 
 export function getSelectedNode(selection: RangeSelection): TextNode | ElementNode {
   const anchor = selection.anchor;
@@ -88,4 +88,13 @@ export function setFloatingElemPositionForLinkEditor(
 
   floatingElem.style.opacity = '1';
   floatingElem.style.transform = `translate(${left}px, ${top}px)`;
+}
+
+export function applyStyles(editor: LexicalEditor, styles: Record<string, string>): void {
+  editor.update(() => {
+    const selection = $getSelection();
+    if ($isRangeSelection(selection)) {
+      $patchStyleText(selection, styles);
+    }
+  });
 }

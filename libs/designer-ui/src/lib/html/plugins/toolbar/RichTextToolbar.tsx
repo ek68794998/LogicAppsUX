@@ -1,17 +1,4 @@
-import {
-  Button,
-  Menu,
-  MenuList,
-  MenuPopover,
-  MenuTrigger,
-  Overflow,
-  Toolbar,
-  ToolbarDivider,
-  ToolbarGroup,
-  useIsOverflowGroupVisible,
-  useOverflowMenu,
-} from '@fluentui/react-components';
-import { MoreHorizontal20Filled } from '@fluentui/react-icons';
+import { Overflow, Toolbar, ToolbarDivider, ToolbarGroup, useIsOverflowGroupVisible } from '@fluentui/react-components';
 import { TOGGLE_LINK_COMMAND } from '@lexical/link';
 import { $isListNode, ListNode } from '@lexical/list';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
@@ -39,13 +26,13 @@ import { parseHtmlSegments, parseSegments } from '../../../editor/base/utils/par
 import { HtmlViewToggleButton } from './buttons/HtmlViewToggleButton';
 import { RedoButton } from './buttons/RedoButton';
 import { UndoButton } from './buttons/UndoButton';
-import { toolbarButtons } from './constants';
 import { BlockFormatDropDown } from './DropdownBlockFormat';
 import { Format } from './Format';
 import { FontDropDown, FontDropDownType } from './helper/FontDropDown';
 import { convertEditorState } from './helper/HTMLChangePlugin';
 import { useCloseDropdownOnScroll } from './hooks/useCloseDropdownOnScroll';
 import { RichTextToolbarItem } from './RichTextToolbarItem';
+import { RichTextToolbarOverflowMenu } from './RichTextToolbarOverflowMenu';
 import type { GroupName } from './types';
 
 export const blockTypeToBlockName = {
@@ -87,36 +74,6 @@ const RichTextToolbarGroup: React.FC<PropsWithChildren> = ({ children }) => (
     {children}
   </ToolbarGroup>
 );
-
-const RichTextToolbarOverflowMenu: React.FC = () => {
-  const { isOverflowing, ref } = useOverflowMenu<HTMLButtonElement>();
-
-  if (!isOverflowing) {
-    return null;
-  }
-
-  const itemIds = Object.keys(toolbarButtons);
-
-  return (
-    <Menu>
-      <MenuTrigger disableButtonEnhancement>
-        <Button ref={ref} icon={<MoreHorizontal20Filled />} aria-label="More items" appearance="subtle" />
-      </MenuTrigger>
-      <MenuPopover>
-        <MenuList>
-          {itemIds.map((itemId, i) => {
-            const isLast = i === itemIds.length - 1;
-            return (
-              <>
-                {itemId} {isLast}
-              </>
-            );
-          })}
-        </MenuList>
-      </MenuPopover>
-    </Menu>
-  );
-};
 
 export const RichTextToolbar: React.FC<ToolbarProps> = ({ isRawText, isSwitchFromPlaintextBlocked, readonly = false, setIsRawText }) => {
   const [editor] = useLexicalComposerContext();
@@ -246,8 +203,8 @@ export const RichTextToolbar: React.FC<ToolbarProps> = ({ isRawText, isSwitchFro
             />
           </RichTextToolbarItem>
           <RichTextToolbarDivider groupId="fontAppearance" />
-          <Format activeEditor={activeEditor} isOverflowEnabled={true} readonly={formattingButtonsDisabled} />
-          <RichTextToolbarOverflowMenu />
+          <Format activeEditor={activeEditor} readonly={formattingButtonsDisabled} />
+          <RichTextToolbarOverflowMenu activeEditor={activeEditor} readonly={formattingButtonsDisabled} />
         </RichTextToolbarGroup>
         {setIsRawText ? (
           <RichTextToolbarGroup>
