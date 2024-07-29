@@ -81,23 +81,27 @@ export const CanvasFinder = (props: CanvasFinderProps) => {
   // If first load is an empty workflow, set canvas to center
   useEffect(() => {
     if (isEmpty && firstLoad) {
+      console.log('CENTER empty setCenter');
       setCenter(DEFAULT_NODE_SIZE.width / 2, DEFAULT_NODE_SIZE.height, { zoom: 1 });
       setFirstLoad(false);
     }
   }, [setCenter, height, isEmpty, firstLoad]);
 
   const nodeData = useNodes().find((x) => x.id === focusNode);
+  console.log('CENTER nodes', useNodes());
   const dispatch = useDispatch<AppDispatch>();
   const handleTransform = useCallback(() => {
-    if (!focusNode) {
-      return;
-    }
-    if ((!nodeData?.position?.x && !nodeData?.position?.y) || !nodeData?.width || !nodeData?.height) {
-      return;
-    }
+    console.log('CENTER handleTransform 1', nodeData);
 
-    let xRawPos = nodeData?.position?.x ?? 0;
-    const yRawPos = nodeData?.position?.y ?? 0;
+    const {
+      measured: nodeDimensions,
+      position: nodePosition,
+    } = nodeData ?? {};
+
+    console.log('CENTER handleTransform 2', nodeDimensions, nodePosition);
+
+    let xRawPos = nodePosition?.x ?? 0;
+    const yRawPos = nodePosition?.y ?? 0;
 
     // If the panel is open, reduce X space
     if (!isPanelCollapsed) {
@@ -106,21 +110,23 @@ export const CanvasFinder = (props: CanvasFinderProps) => {
       xRawPos += (directionMultiplier * 630) / 2;
     }
 
-    const xTarget = xRawPos + (nodeData?.width ?? DEFAULT_NODE_SIZE.width) / 2; // Center X on node midpoint
-    const yTarget = yRawPos + (nodeData?.height ?? DEFAULT_NODE_SIZE.height); // Center Y on bottom edge
+    const xTarget = xRawPos + (nodeDimensions?.width ?? DEFAULT_NODE_SIZE.width) / 2; // Center X on node midpoint
+    const yTarget = yRawPos + (nodeDimensions?.height ?? DEFAULT_NODE_SIZE.height); // Center Y on bottom edge
 
     if (firstLoad) {
       const firstNodeYPos = 150;
       setCenter(xTarget, height / 2 - firstNodeYPos, { zoom: 1 });
       setFirstLoad(false);
+      console.log('CENTER first setCenter', xTarget, height / 2 - firstNodeYPos, { zoom: 1 });
     } else {
       setCenter(xTarget, yTarget, {
         zoom: getZoom(),
         duration: 500,
       });
+      console.log('CENTER another setCenter', xTarget, yTarget);
     }
     dispatch(clearFocusNode());
-  }, [dispatch, firstLoad, focusNode, getZoom, nodeData, setCenter, height, isPanelCollapsed, panelLocation]);
+  }, [dispatch, firstLoad, getZoom, nodeData, setCenter, height, isPanelCollapsed, panelLocation]);
 
   useEffect(() => {
     handleTransform();
